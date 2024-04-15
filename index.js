@@ -1,6 +1,6 @@
 import app from "./src/app.js";
 
-const PORT = 3000;
+import { PORT } from "./src/config.js"
 
 app.listen(PORT);
 
