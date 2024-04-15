@@ -1,4 +1,4 @@
-import { Router }  from "express";
+import { Router } from "express";
 
 import routerProducts from "./api/products/products.router.js";
 

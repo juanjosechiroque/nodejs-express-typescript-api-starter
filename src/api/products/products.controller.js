@@ -1,3 +1,3 @@
-export function getProductsHandler (req, res, next) {
-    res.json({message: "Hola"});
+export function getProductsHandler(req, res) {
+    res.json({ message: "Hola" });
 }
