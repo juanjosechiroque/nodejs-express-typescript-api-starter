@@ -2,7 +2,7 @@ import Joi from "joi";
 
 const createProductSchema = Joi.object().keys({
     name: Joi.string().required(),
-    price: Joi.string().required(),
+    price: Joi.number().positive().required(),
 });
 
 export const validateProduct = (data) => {

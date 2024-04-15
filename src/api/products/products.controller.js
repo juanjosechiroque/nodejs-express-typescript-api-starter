@@ -15,8 +15,8 @@ export function createProductHandler(req, res) {
         if (!productValidation.valid)
             throw BadRequestError(productValidation.errors);
 
-        const result = createProduct();
-        res.json({ message: result });
+        const result = createProduct(name, price);
+        res.json({ data: result });
     } catch (error) {
         res.json({ error: error.message });
     }
