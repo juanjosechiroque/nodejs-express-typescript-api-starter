@@ -1,4 +1,6 @@
+import { BadRequestError } from "../../errors.js";
 import { createProduct, getProducts } from "./products.service.js";
+import { validateProduct } from "./products.validation.js";
 
 export function getProductsHandler(req, res) {
     const result = getProducts();
@@ -6,6 +8,16 @@ export function getProductsHandler(req, res) {
 }
 
 export function createProductHandler(req, res) {
-    const result = createProduct();
-    res.json({ message: result });
+    const { name, price } = req.body;
+
+    try {
+        const productValidation = validateProduct({ name, price });
+        if (!productValidation.valid)
+            throw BadRequestError(productValidation.errors);
+
+        const result = createProduct();
+        res.json({ message: result });
+    } catch (error) {
+        res.json({ error: error.message });
+    }
 }
