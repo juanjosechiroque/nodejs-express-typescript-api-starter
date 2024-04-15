@@ -11,7 +11,8 @@
         "lint:fix": "eslint . --fix",
         "prettier": "prettier --check .",
         "prettier:fix": "prettier --write .",
-        "format": "npm run lint:fix && npm run prettier:fix"
+        "format": "npm run lint:fix && npm run prettier:fix",
+        "prepare": "if which husky >/dev/null; then husky install; fi"
     },
     "keywords": [],
     "author": "",
@@ -23,6 +24,7 @@
         "dotenv": "^16.4.5",
         "eslint": "^8.35.0",
         "eslint-config-prettier": "^9.1.0",
+        "husky": "^9.0.11",
         "nodemon": "^3.1.0",
         "prettier": "^3.2.5"
     }
