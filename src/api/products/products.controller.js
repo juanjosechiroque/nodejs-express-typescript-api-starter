@@ -7,7 +7,7 @@ export function getProductsHandler(req, res) {
     res.json({ message: result });
 }
 
-export function createProductHandler(req, res) {
+export function createProductHandler(req, res, next) {
     const { name, price } = req.body;
 
     try {
@@ -16,8 +16,8 @@ export function createProductHandler(req, res) {
             throw BadRequestError(productValidation.errors);
 
         const result = createProduct(name, price);
-        res.json({ data: result });
+        res.status(201).send({ data: result });
     } catch (error) {
-        res.json({ error: error.message });
+        next(error);
     }
 }

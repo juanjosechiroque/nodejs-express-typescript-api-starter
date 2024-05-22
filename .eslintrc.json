@@ -7,9 +7,11 @@
     "extends": ["eslint:recommended", "prettier"],
     "env": {
         "es2021": true,
-        "node": true
+        "node": true,
+        "jest": true
     },
     "rules": {
-        "no-console": "error"
+        "no-console": "error",
+        "no-unused-vars": ["error", { "argsIgnorePattern": "next" }]
     }
 }
