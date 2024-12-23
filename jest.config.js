@@ -1,6 +1,7 @@
 export default {
     testEnvironment: "node",
     collectCoverage: true,
-    silent: true,
+    silent: false,
+    verbose: true,
     transform: {},
 };

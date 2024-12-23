@@ -10,7 +10,7 @@ export async function registerUserHandler(req, res, next) {
         if (!productValidation.valid)
             throw BadRequestError(productValidation.errors);
 
-        const result = await registerUser(email, password);
+        const result = await registerUser({ email, password });
         res.status(201).send({ data: result });
     } catch (error) {
         next(error);

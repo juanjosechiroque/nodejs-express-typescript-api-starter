@@ -4,7 +4,7 @@ import { authenticate } from "../../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.post("/register", registerUserHandler);
+router.post("/signup", registerUserHandler);
 router.get("/protected", authenticate, (req, res) => {
     res.status(200).json({ message: "Ruta protegida accesible" });
 });
