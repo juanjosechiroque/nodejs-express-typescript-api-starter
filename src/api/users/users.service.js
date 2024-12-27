@@ -4,6 +4,7 @@ import { createUserDao, existsEmailUserDao } from "./users.dao.js";
 
 export async function registerUser({ email, password }) {
     const existingUser = await existsEmailUserDao({ email });
+
     if (existingUser) {
         throw BadRequestError("Email address is already registered");
     }

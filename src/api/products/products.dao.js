@@ -6,8 +6,6 @@ export async function createProductDao({ name, price }) {
     return product;
 }
 export async function getProductsDao() {
-    console.log("REAL getProductsDao called");
-
     try {
         return await Product.find({});
     } catch (error) {

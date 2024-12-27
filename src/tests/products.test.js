@@ -8,6 +8,13 @@ jest.unstable_mockModule("../api/products/products.dao.js", () => ({
     ]),
 }));
 
+jest.unstable_mockModule("../middleware/authMiddleware.js", () => ({
+    authenticate: jest.fn((req, res, next) => {
+        req.user = { id: 1, name: "Mock User" };
+        next();
+    }),
+}));
+
 const { api } = await import("./helpers.js");
 
 describe("GET /products", () => {
