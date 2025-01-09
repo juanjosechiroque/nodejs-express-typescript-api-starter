@@ -65,7 +65,10 @@ describe("POST /products", () => {
             .set("Authorization", "random token");
 
         expect(response.status).toBe(401);
-        expect(response.body).toHaveProperty("message", "Unauthorized");
+        expect(response.body).toHaveProperty(
+            "message",
+            "Authorization header missing or invalid"
+        );
     });
 
     test("should return an error when token is empty", async () => {

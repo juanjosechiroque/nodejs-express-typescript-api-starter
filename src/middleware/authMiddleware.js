@@ -1,16 +1,19 @@
 import { verifyToken } from "../utils/jwt.js";
+import { UnauthorizedError } from "../errors.js";
 
 export const authenticate = (req, res, next) => {
     const authHeader = req.header("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer")) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return next(
+            UnauthorizedError("Authorization header missing or invalid")
+        );
     }
 
     const token = authHeader.slice(7).trim();
 
     if (!token || token === "") {
-        return res.status(401).json({ message: "Access denied" });
+        return next(UnauthorizedError("Access denied"));
     }
 
     try {
@@ -18,6 +21,6 @@ export const authenticate = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        res.status(401).json({ message: "Invalid or expired token" });
+        return next(UnauthorizedError("Invalid or expired token"));
     }
 };

@@ -5,3 +5,11 @@ export const BadRequestError = (errorMessage) => {
         statusCode: 400,
     };
 };
+
+export const UnauthorizedError = (errorMessage) => {
+    return {
+        code: "UnauthorizedError",
+        message: errorMessage,
+        statusCode: 401,
+    };
+};
