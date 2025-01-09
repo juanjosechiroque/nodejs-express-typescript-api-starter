@@ -1,11 +1,9 @@
 import { jest } from "@jest/globals";
+import mockMongoose from "./jest-mongoose-mock.js";
 
-jest.unstable_mockModule("../api/products/products.dao.js", () => ({
-    createProductDao: jest.fn().mockReturnValue({ name: "test", price: 10 }),
-    getProductsDao: jest.fn().mockResolvedValue([
-        { id: 1, name: "Mocked Product 1", price: 10 },
-        { id: 2, name: "Mocked Product 2", price: 20 },
-    ]),
+jest.mock("mongoose", () => ({
+    __esModule: true,
+    ...mockMongoose,
 }));
 
 jest.unstable_mockModule("../utils/jwt.js", () => ({
@@ -22,14 +20,23 @@ const { api } = await import("./helpers.js");
 
 describe("GET /products", () => {
     test("should return a list of products", async () => {
+        const productsMock = [
+            { _id: "1", name: "Mocked Product 1", price: 100 },
+            { _id: "2", name: "Mocked Product 2", price: 200 },
+        ];
+        mockMongoose.model("Product").find.mockResolvedValue(productsMock);
+
         const response = await api.get("/products");
+
         expect(response.status).toBe(200);
+        expect(response.body.data).toHaveLength(productsMock.length);
     });
 });
 
 describe("POST /products", () => {
     test("should return a new product", async () => {
         const data = { name: "test", price: 10 };
+        mockMongoose.model("Product").find.mockResolvedValueOnce(data);
 
         const response = await api
             .post("/products")

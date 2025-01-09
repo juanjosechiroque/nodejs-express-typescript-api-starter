@@ -5,7 +5,7 @@ import { validateProduct } from "./products.validation.js";
 export async function getProductsHandler(req, res, next) {
     try {
         const result = await getProducts();
-        res.json({ message: result });
+        res.json({ data: result });
     } catch (error) {
         next(error);
     }

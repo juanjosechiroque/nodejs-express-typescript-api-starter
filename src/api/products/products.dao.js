@@ -6,10 +6,5 @@ export async function createProductDao({ name, price }) {
     return product;
 }
 export async function getProductsDao() {
-    try {
-        return await Product.find({});
-    } catch (error) {
-        console.log("Error fetching products:", error);
-        return null;
-    }
+    return await Product.find({});
 }
