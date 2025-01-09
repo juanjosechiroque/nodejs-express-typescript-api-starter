@@ -1,6 +1,7 @@
 import { BadRequestError } from "../../errors.js";
 import { validateRegisterUser } from "./users.validation.js";
 import { registerUser } from "./users.service.js";
+import { sendResponse } from "../../utils/response.js";
 
 export async function registerUserHandler(req, res, next) {
     const { email, password } = req.body;
@@ -15,7 +16,7 @@ export async function registerUserHandler(req, res, next) {
             throw BadRequestError(registerUserValidations.errors);
 
         const result = await registerUser({ email, password });
-        res.status(201).send({ data: result });
+        sendResponse(res, 201, result);
     } catch (error) {
         next(error);
     }
