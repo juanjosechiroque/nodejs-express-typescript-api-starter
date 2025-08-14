@@ -4,4 +4,5 @@ export default {
     silent: false,
     verbose: true,
     transform: {},
+    setupFilesAfterEnv: ["<rootDir>/src/tests/jest.setup.js"],
 };
