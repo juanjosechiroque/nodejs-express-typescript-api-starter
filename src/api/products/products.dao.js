@@ -8,3 +8,7 @@ export async function createProductDao({ name, price }) {
 export async function getProductsDao() {
     return await Product.find({});
 }
+
+export async function updateProductDao({ id, name, price }) {
+    return await Product.findByIdAndUpdate(id, { name, price }, { new: true });
+}

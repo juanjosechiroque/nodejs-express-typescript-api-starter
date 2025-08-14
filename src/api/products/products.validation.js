@@ -4,3 +4,8 @@ export const createProductSchema = Joi.object().keys({
     name: Joi.string().required(),
     price: Joi.number().positive().required(),
 });
+
+export const updateProductSchema = Joi.object().keys({
+    name: Joi.string().required(),
+    price: Joi.number().positive().required(),
+});

@@ -13,3 +13,11 @@ export const UnauthorizedError = (errorMessage) => {
         statusCode: 401,
     };
 };
+
+export const NotFoundError = (errorMessage) => {
+    return {
+        code: "NotFoundError",
+        message: errorMessage,
+        statusCode: 404,
+    };
+};
