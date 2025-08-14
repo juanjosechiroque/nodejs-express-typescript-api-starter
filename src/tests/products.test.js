@@ -92,3 +92,46 @@ describe("POST /products", () => {
         );
     });
 });
+
+describe("PUT /products/:id", () => {
+    test("should return the updated product", async () => {
+        const data = { name: "updated", price: 20 };
+        mockMongoose
+            .model("Product")
+            .findByIdAndUpdate.mockResolvedValueOnce(data);
+
+        const response = await api
+            .put("/products/123")
+            .set("Authorization", "Bearer valid-token")
+            .send(data);
+
+        expect(response.status).toBe(200);
+
+        const resultData = response.body.data;
+        expect(resultData.name).toBe(data.name);
+        expect(resultData.price).toBe(data.price);
+    });
+
+    test("should return an error when input is invalid", async () => {
+        const response = await api
+            .put("/products/123")
+            .set("Authorization", "Bearer valid-token");
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("message");
+    });
+
+    test("should return an error when product not found", async () => {
+        mockMongoose
+            .model("Product")
+            .findByIdAndUpdate.mockResolvedValueOnce(null);
+
+        const response = await api
+            .put("/products/123")
+            .set("Authorization", "Bearer valid-token")
+            .send({ name: "updated", price: 20 });
+
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty("message", "Product not found");
+    });
+});
