@@ -1,3 +1,4 @@
+import { NotFoundError } from "../../errors.js";
 import {
     createProductDao,
     getProductsDao,
@@ -15,10 +16,13 @@ export async function createProduct({ name, price }) {
 }
 
 export async function updateProduct({ id, name, price }) {
-    return await updateProductDao({ id, name, price });
+    const result = await updateProductDao({ id, name, price });
+    if (!result) throw NotFoundError("Product not found");
+    return result;
 }
 
 export async function deleteProduct(productId) {
     const result = await deleteProductDao(productId);
+    if (!result) throw NotFoundError("Product not found");
     return result;
 }

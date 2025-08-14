@@ -24,7 +24,7 @@ describe("GET /products", () => {
             { _id: "1", name: "Mocked Product 1", price: 100 },
             { _id: "2", name: "Mocked Product 2", price: 200 },
         ];
-        mockMongoose.model("Product").find.mockResolvedValue(productsMock);
+        mockMongoose.model("Product").find.mockResolvedValueOnce(productsMock);
 
         const response = await api.get("/products");
 
@@ -132,6 +132,7 @@ describe("PUT /products/:id", () => {
             .send({ name: "updated", price: 20 });
 
         expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty("code");
         expect(response.body).toHaveProperty("message", "Product not found");
     });
 });
@@ -144,7 +145,7 @@ describe("DELETE /products", () => {
         ];
         mockMongoose
             .model("Product")
-            .findByIdAndDelete.mockResolvedValue(productsMock[0]);
+            .findByIdAndDelete.mockResolvedValueOnce(productsMock[0]);
 
         const response = await api
             .delete(`/products/${productId}`)
@@ -155,7 +156,9 @@ describe("DELETE /products", () => {
 
     test("should return an error when product not found", async () => {
         const productId = "1";
-        mockMongoose.model("Product").findByIdAndDelete.mockResolvedValue(null);
+        mockMongoose
+            .model("Product")
+            .findByIdAndDelete.mockResolvedValueOnce(null);
 
         const response = await api
             .delete(`/products/${productId}`)

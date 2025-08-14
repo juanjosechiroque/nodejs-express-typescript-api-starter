@@ -43,7 +43,7 @@ describe("POST /users/singup", () => {
         const data = { email: "test@example.com", password: "test123" };
 
         const userMocked = { _id: "1", email: "test@example.com" };
-        mockMongoose.model("User").findOne.mockResolvedValue(userMocked);
+        mockMongoose.model("User").findOne.mockResolvedValueOnce(userMocked);
 
         const response = await api.post("/users/signup").send(data);
 
