@@ -21,7 +21,7 @@
     "author": "",
     "license": "ISC",
     "engines": {
-        "node": ">=22"
+        "node": ">=24"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

@@ -5,7 +5,7 @@ import globals from "globals";
 
 export default defineConfig([
     {
-        ignores: ["node_modules/", "coverage/", "*.min.js"],
+        ignores: ["node_modules/", "coverage/", "dist/", "build/", "*.min.js"],
     },
     {
         files: ["**/*.js"],
