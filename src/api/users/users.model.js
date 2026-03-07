@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 
 const userSchema = new Schema(
     {
-        email: { type: String },
-        password: { type: String },
+        email: { type: String, required: true, unique: true, lowercase: true },
+        password: { type: String, required: true },
     },
     {
         timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
