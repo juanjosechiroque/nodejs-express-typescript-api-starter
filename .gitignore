@@ -1,3 +1,11 @@
-node_modules
+node_modules/
 .env
-coverage
+.env.local
+.env.*.local
+coverage/
+dist/
+build/
+*.log
+npm-debug.log*
+.DS_Store
+lcov.info
