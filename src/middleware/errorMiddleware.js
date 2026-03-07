@@ -4,6 +4,7 @@ export const errorGenericHandler = (err, req, res, next) => {
         statusCode = 500,
         message = "Internal server error",
         stack,
+        details,
     } = err;
 
     const result = {
@@ -11,6 +12,10 @@ export const errorGenericHandler = (err, req, res, next) => {
         code,
         message,
     };
+
+    if (details != null && Array.isArray(details)) {
+        result.details = details;
+    }
 
     if (process.env.NODE_ENV !== "production") {
         result.stack = stack;

@@ -9,7 +9,9 @@ export function validate(schema) {
                 field: detail.context.key,
                 error: detail.message,
             }));
-            return next(BadRequestError(validationErrors));
+            const err = BadRequestError("Validation failed");
+            err.details = validationErrors;
+            return next(err);
         }
         next();
     };
