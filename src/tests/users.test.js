@@ -2,7 +2,7 @@ import mockMongoose from "./jest-mongoose-mock.js";
 
 const { api } = await import("./helpers.js");
 
-describe("POST /users/singup", () => {
+describe("POST /users/signup", () => {
     test("should return a new user", async () => {
         const data = { email: "test@example.com", password: "test123" };
 
