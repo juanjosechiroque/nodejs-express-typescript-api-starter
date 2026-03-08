@@ -18,8 +18,8 @@ export async function getProductsHandler(req, res, next) {
 
 export async function createProductHandler(req, res, next) {
     try {
-        const { name, price } = req.body;
-        const result = await createProduct({ name, price });
+        const { name, price, description } = req.body;
+        const result = await createProduct({ name, price, description });
         sendResponse(res, 201, result);
     } catch (error) {
         next(error);
@@ -29,9 +29,7 @@ export async function createProductHandler(req, res, next) {
 export async function updateProductHandler(req, res, next) {
     try {
         const { id } = req.params;
-        const { name, price } = req.body;
-
-        const result = await updateProduct({ id, name, price });
+        const result = await updateProduct({ id, ...req.body });
         sendResponse(res, 200, result);
     } catch (error) {
         next(error);

@@ -11,12 +11,15 @@ export async function getProducts() {
     return result;
 }
 
-export async function createProduct({ name, price }) {
-    return await createProductDao({ name, price });
+export async function createProduct({ name, price, description }) {
+    return await createProductDao({ name, price, description });
 }
 
-export async function updateProduct({ id, name, price }) {
-    const result = await updateProductDao({ id, name, price });
+export async function updateProduct({ id, ...fields }) {
+    const update = Object.fromEntries(
+        Object.entries(fields).filter(([, v]) => v !== undefined)
+    );
+    const result = await updateProductDao(id, update);
     if (!result) throw NotFoundError("Product not found");
     return result;
 }

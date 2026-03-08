@@ -7,7 +7,10 @@ import {
 } from "./products.controller.js";
 import { authenticate } from "../../middleware/authMiddleware.js";
 import { validate } from "../../middleware/validationMiddleware.js";
-import { updateProductSchema } from "./products.validation.js";
+import {
+    createProductSchema,
+    updateProductSchema,
+} from "./products.validation.js";
 
 const router = Router();
 
@@ -15,7 +18,7 @@ router.get("/", getProductsHandler);
 router.post(
     "/",
     authenticate,
-    validate(updateProductSchema),
+    validate(createProductSchema),
     createProductHandler
 );
 router.put(
