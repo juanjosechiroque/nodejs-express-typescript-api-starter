@@ -12,6 +12,6 @@ jest.unstable_mockModule("../utils/jwt.js", () => ({
         if (token === "valid-token") {
             return { id: 1, name: "Mock User" };
         }
-        throw new Error("Token inválido o expirado");
+        throw new Error("Invalid or expired token");
     }),
 }));

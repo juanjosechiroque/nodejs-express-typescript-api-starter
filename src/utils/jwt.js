@@ -13,6 +13,6 @@ export const verifyToken = (token) => {
     try {
         return verify(token, JWT_SECRET);
     } catch (err) {
-        throw new Error("Token inválido o expirado");
+        throw new Error("Invalid or expired token");
     }
 };
