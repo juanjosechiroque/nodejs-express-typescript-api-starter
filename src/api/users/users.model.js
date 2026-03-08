@@ -24,6 +24,7 @@ userSchema.set("toJSON", {
     transform: function (doc, ret) {
         ret.id = ret._id.toHexString();
         delete ret._id;
+        delete ret.password;
     },
 });
 
