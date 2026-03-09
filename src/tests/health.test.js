@@ -1,10 +1,11 @@
 const { api } = await import("./helpers.js");
 
-test("GET /health should return healthy status", async () => {
+test("GET /health should return healthy status and db state", async () => {
     const response = await api.get("/health");
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("status", "healthy");
     expect(response.body).toHaveProperty("uptime");
+    expect(response.body).toHaveProperty("db", "connected");
 });
 
 test("GET unknown route should return 404 with standard format", async () => {

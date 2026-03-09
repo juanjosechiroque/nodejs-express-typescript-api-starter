@@ -28,6 +28,7 @@ const models = {
 export const mockMongoose = {
     Schema: jest.fn(() => mockSchema()),
     model: jest.fn((modelName) => models[modelName] || createMockModel()),
+    connection: { readyState: 1 },
 };
 
 export default mockMongoose;
