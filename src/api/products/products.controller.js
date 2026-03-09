@@ -1,6 +1,7 @@
 import {
     createProduct,
     getProducts,
+    getProductById,
     updateProduct,
     deleteProduct,
 } from "./products.service.js";
@@ -11,6 +12,16 @@ export async function getProductsHandler(req, res, next) {
     try {
         const result = await getProducts();
         sendResponse(res, 200, result, "Products retrieved");
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function getProductByIdHandler(req, res, next) {
+    try {
+        const { id } = req.params;
+        const result = await getProductById(id);
+        sendResponse(res, 200, result, "Product retrieved");
     } catch (error) {
         next(error);
     }

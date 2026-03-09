@@ -29,6 +29,43 @@ describe("GET /products", () => {
     });
 });
 
+const validMongoId = "507f1f77bcf86cd799439011";
+
+describe("GET /products/:id", () => {
+    test("should return a product by id", async () => {
+        const productMock = {
+            _id: validMongoId,
+            name: "Mocked Product 1",
+            price: 100,
+        };
+        mockMongoose
+            .model("Product")
+            .findById.mockResolvedValueOnce(productMock);
+
+        const response = await api.get(`/products/${validMongoId}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.name).toBe(productMock.name);
+        expect(response.body.data.price).toBe(productMock.price);
+    });
+
+    test("should return 404 when product not found", async () => {
+        mockMongoose.model("Product").findById.mockResolvedValueOnce(null);
+
+        const response = await api.get(`/products/${validMongoId}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty("message", "Product not found");
+    });
+
+    test("should return 400 when id format is invalid", async () => {
+        const response = await api.get("/products/invalid-id");
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("message", "Validation failed");
+    });
+});
+
 describe("POST /products", () => {
     test("should return a new product", async () => {
         const data = { name: "test", price: 10 };
@@ -103,8 +140,6 @@ describe("POST /products", () => {
         expect(response.body).toHaveProperty("message");
     });
 });
-
-const validMongoId = "507f1f77bcf86cd799439011";
 
 describe("PUT /products/:id", () => {
     test("should return the updated product", async () => {

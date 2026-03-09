@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     getProductsHandler,
+    getProductByIdHandler,
     createProductHandler,
     updateProductHandler,
     deleteProductHandler,
@@ -19,6 +20,7 @@ import {
 const router = Router();
 
 router.get("/", getProductsHandler);
+router.get("/:id", validateParams(productIdParamSchema), getProductByIdHandler);
 router.post(
     "/",
     authenticate,

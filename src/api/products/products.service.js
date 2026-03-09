@@ -2,12 +2,19 @@ import { NotFoundError } from "../../errors.js";
 import {
     createProductDao,
     getProductsDao,
+    getProductByIdDao,
     updateProductDao,
     deleteProductDao,
 } from "./products.dao.js";
 
 export async function getProducts() {
     const result = await getProductsDao();
+    return result;
+}
+
+export async function getProductById(id) {
+    const result = await getProductByIdDao(id);
+    if (!result) throw NotFoundError("Product not found");
     return result;
 }
 

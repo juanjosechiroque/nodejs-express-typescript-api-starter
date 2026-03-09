@@ -12,6 +12,7 @@ const createMockModel = () => {
 
     Model.find = jest.fn().mockResolvedValue([]);
     Model.findOne = jest.fn().mockResolvedValue(null);
+    Model.findById = jest.fn().mockResolvedValue(null);
     Model.findByIdAndUpdate = jest.fn().mockResolvedValue(null);
     Model.findByIdAndDelete = jest.fn().mockResolvedValue(null);
     Model.create = jest.fn().mockResolvedValue({});

@@ -9,6 +9,10 @@ export async function getProductsDao() {
     return await Product.find({});
 }
 
+export async function getProductByIdDao(id) {
+    return await Product.findById(id);
+}
+
 export async function updateProductDao(id, update) {
     return await Product.findByIdAndUpdate(id, update, { new: true });
 }
