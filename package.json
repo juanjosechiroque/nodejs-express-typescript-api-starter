@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "start": "node index.js",
-        "dev": "NODE_ENV=development nodemon index.js",
+        "dev": "nodemon index.js",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "prettier": "prettier --check .",
@@ -14,8 +14,8 @@
         "validate": "npm run lint && npm run prettier && npm test",
         "format": "npm run lint:fix && npm run prettier:fix",
         "prepare": "husky",
-        "test": "NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest",
-        "test:coverage": "NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest --coverage"
+        "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+        "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
     },
     "keywords": [],
     "author": "",
