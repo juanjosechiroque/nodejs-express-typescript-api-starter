@@ -1,5 +1,11 @@
 const { api } = await import("./helpers.js");
 
+test("GET / should return 200 and status running", async () => {
+    const response = await api.get("/");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ status: "running" });
+});
+
 test("GET /health should return healthy status and db state", async () => {
     const response = await api.get("/health");
     expect(response.status).toBe(200);

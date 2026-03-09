@@ -1,11 +1,46 @@
+# Dependencies
 node_modules/
+
+# Environment variables
 .env
-.env.local
-.env.*.local
-coverage/
-dist/
-build/
+.env.*
+!.env.example
+
+# Logs
+logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime files
+pids
+*.pid
+*.pid.lock
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Build / dist
+dist/
+build/
+
+# Cache
+.cache
+.eslintcache
+
+# OS files
 .DS_Store
-lcov.info
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Optional npm cache
+.npm
+
+# Output of npm pack
+*.tgz

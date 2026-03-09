@@ -15,6 +15,18 @@ describe("GET /products", () => {
         expect(response.status).toBe(200);
         expect(response.body.data).toHaveLength(productsMock.length);
     });
+
+    test("should return 500 when getProducts throws", async () => {
+        mockMongoose
+            .model("Product")
+            .find.mockRejectedValueOnce(new Error("DB error"));
+
+        const response = await api.get("/products");
+
+        expect(response.status).toBe(500);
+        expect(response.body).toHaveProperty("code");
+        expect(response.body).toHaveProperty("message");
+    });
 });
 
 describe("POST /products", () => {
@@ -74,6 +86,21 @@ describe("POST /products", () => {
             "message",
             "Invalid or expired token"
         );
+    });
+
+    test("should return 500 when createProduct throws", async () => {
+        mockMongoose
+            .model("Product")
+            .prototype.save.mockRejectedValueOnce(new Error("DB error"));
+
+        const response = await api
+            .post("/products")
+            .set("Authorization", "Bearer valid-token")
+            .send({ name: "test", price: 10 });
+
+        expect(response.status).toBe(500);
+        expect(response.body).toHaveProperty("code");
+        expect(response.body).toHaveProperty("message");
     });
 });
 
