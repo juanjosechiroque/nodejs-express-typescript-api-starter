@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export async function healthCheck(req, res) {
+export async function healthCheckHandler(req, res) {
     const db =
         mongoose.connection?.readyState === 1 ? "connected" : "disconnected";
 
