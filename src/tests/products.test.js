@@ -77,6 +77,8 @@ describe("POST /products", () => {
     });
 });
 
+const validMongoId = "507f1f77bcf86cd799439011";
+
 describe("PUT /products/:id", () => {
     test("should return the updated product", async () => {
         const data = { name: "updated", price: 20 };
@@ -85,7 +87,7 @@ describe("PUT /products/:id", () => {
             .findByIdAndUpdate.mockResolvedValueOnce(data);
 
         const response = await api
-            .put("/products/123")
+            .put(`/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token")
             .send(data);
 
@@ -98,11 +100,21 @@ describe("PUT /products/:id", () => {
 
     test("should return an error when input is invalid", async () => {
         const response = await api
-            .put("/products/123")
+            .put(`/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("message");
+    });
+
+    test("should return 400 when id format is invalid", async () => {
+        const response = await api
+            .put("/products/invalid-id")
+            .set("Authorization", "Bearer valid-token")
+            .send({ name: "updated", price: 20 });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("message", "Validation failed");
     });
 
     test("should return an error when product not found", async () => {
@@ -111,7 +123,7 @@ describe("PUT /products/:id", () => {
             .findByIdAndUpdate.mockResolvedValueOnce(null);
 
         const response = await api
-            .put("/products/123")
+            .put(`/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token")
             .send({ name: "updated", price: 20 });
 
@@ -121,31 +133,40 @@ describe("PUT /products/:id", () => {
     });
 });
 
-describe("DELETE /products", () => {
+describe("DELETE /products/:id", () => {
     test("should delete a product", async () => {
-        const productId = "1";
-        const productsMock = [
-            { _id: productId, name: "Mocked Product 1", price: 100 },
-        ];
+        const productMock = {
+            _id: validMongoId,
+            name: "Mocked Product 1",
+            price: 100,
+        };
         mockMongoose
             .model("Product")
-            .findByIdAndDelete.mockResolvedValueOnce(productsMock[0]);
+            .findByIdAndDelete.mockResolvedValueOnce(productMock);
 
         const response = await api
-            .delete(`/products/${productId}`)
+            .delete(`/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(200);
     });
 
+    test("should return 400 when id format is invalid", async () => {
+        const response = await api
+            .delete("/products/invalid-id")
+            .set("Authorization", "Bearer valid-token");
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("message", "Validation failed");
+    });
+
     test("should return an error when product not found", async () => {
-        const productId = "1";
         mockMongoose
             .model("Product")
             .findByIdAndDelete.mockResolvedValueOnce(null);
 
         const response = await api
-            .delete(`/products/${productId}`)
+            .delete(`/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(404);

@@ -16,3 +16,21 @@ export function validate(schema) {
         next();
     };
 }
+
+export function validateParams(schema) {
+    return (req, res, next) => {
+        const { error } = schema.validate(req.params ?? {}, {
+            abortEarly: false,
+        });
+        if (error) {
+            const validationErrors = error.details.map((detail) => ({
+                field: detail.context.key,
+                error: detail.message,
+            }));
+            const err = BadRequestError("Validation failed");
+            err.details = validationErrors;
+            return next(err);
+        }
+        next();
+    };
+}

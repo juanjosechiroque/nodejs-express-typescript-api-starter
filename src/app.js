@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import router from "./router.js";
 import cors from "cors";
 import { errorGenericHandler } from "./middleware/errorMiddleware.js";
+import { notFound } from "./middleware/notFoundMiddleware.js";
 import helmet from "helmet";
 import { rateLimitWindowMs, rateLimitMax } from "./config.js";
 
@@ -24,6 +25,7 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 app.use(router);
+app.use(notFound);
 app.use(errorGenericHandler);
 
 export default app;

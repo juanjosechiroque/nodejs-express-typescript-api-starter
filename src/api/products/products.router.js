@@ -6,10 +6,14 @@ import {
     deleteProductHandler,
 } from "./products.controller.js";
 import { authenticate } from "../../middleware/authMiddleware.js";
-import { validate } from "../../middleware/validationMiddleware.js";
+import {
+    validate,
+    validateParams,
+} from "../../middleware/validationMiddleware.js";
 import {
     createProductSchema,
     updateProductSchema,
+    productIdParamSchema,
 } from "./products.validation.js";
 
 const router = Router();
@@ -24,10 +28,16 @@ router.post(
 router.put(
     "/:id",
     authenticate,
+    validateParams(productIdParamSchema),
     validate(updateProductSchema),
     updateProductHandler
 );
 
-router.delete("/:id", authenticate, deleteProductHandler);
+router.delete(
+    "/:id",
+    authenticate,
+    validateParams(productIdParamSchema),
+    deleteProductHandler
+);
 
 export default router;
