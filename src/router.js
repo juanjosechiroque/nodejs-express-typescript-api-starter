@@ -6,6 +6,8 @@ import routerUsers from "./api/users/users.router.js";
 
 const router = Router();
 
+router.get("/", (req, res) => res.json({ status: "running" }));
+
 router.use("/health", healthRouter);
 router.use("/products", routerProducts);
 router.use("/users", routerUsers);
