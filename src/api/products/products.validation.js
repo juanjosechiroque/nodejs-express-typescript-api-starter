@@ -25,3 +25,8 @@ export const updateProductSchema = Joi.object()
         description: Joi.string().allow("").optional(),
     })
     .min(1);
+
+export const listProductsQuerySchema = Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+});

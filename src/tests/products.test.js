@@ -1,23 +1,60 @@
+import { jest } from "@jest/globals";
 import mockMongoose from "./jest-mongoose-mock.js";
 
 const { api } = await import("./helpers.js");
 
 describe("GET /products", () => {
-    test("should return a list of products", async () => {
+    test("should return a list of products with items and pagination", async () => {
         const productsMock = [
             { _id: "1", name: "Mocked Product 1", price: 100 },
             { _id: "2", name: "Mocked Product 2", price: 200 },
         ];
-        mockMongoose.model("Product").find.mockResolvedValueOnce(productsMock);
+        const findChain = {};
+        findChain.skip = jest.fn().mockReturnValue(findChain);
+        findChain.limit = jest.fn().mockReturnValue(findChain);
+        findChain.lean = jest.fn().mockResolvedValue(productsMock);
+        mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
+        mockMongoose.model("Product").countDocuments.mockResolvedValueOnce(productsMock.length);
 
         const response = await api.get("/products");
 
         expect(response.status).toBe(200);
-        expect(response.body.data).toHaveLength(productsMock.length);
+        expect(response.body.data).toHaveProperty("items");
+        expect(response.body.data).toHaveProperty("pagination");
+        expect(response.body.data.items).toHaveLength(productsMock.length);
+        expect(response.body.data.pagination).toEqual({
+            page: 1,
+            limit: 10,
+            total: 2,
+            totalPages: 1,
+        });
+    });
+
+    test("should accept page and limit query params", async () => {
+        const findChain = {};
+        findChain.skip = jest.fn().mockReturnValue(findChain);
+        findChain.limit = jest.fn().mockReturnValue(findChain);
+        findChain.lean = jest.fn().mockResolvedValue([]);
+        mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
+        mockMongoose.model("Product").countDocuments.mockResolvedValueOnce(50);
+
+        const response = await api.get("/products?page=2&limit=10");
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.pagination).toEqual({
+            page: 2,
+            limit: 10,
+            total: 50,
+            totalPages: 5,
+        });
     });
 
     test("should return 500 when getProducts throws", async () => {
-        mockMongoose.model("Product").find.mockRejectedValueOnce(new Error("DB error"));
+        const findChain = {};
+        findChain.skip = jest.fn().mockReturnValue(findChain);
+        findChain.limit = jest.fn().mockReturnValue(findChain);
+        findChain.lean = jest.fn().mockRejectedValue(new Error("DB error"));
+        mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
 
         const response = await api.get("/products");
 

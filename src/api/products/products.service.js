@@ -7,9 +7,14 @@ import {
     deleteProductDao,
 } from "./products.dao.js";
 
-export async function getProducts() {
-    const result = await getProductsDao();
-    return result;
+export async function getProducts({ page = 1, limit = 10 } = {}) {
+    const skip = (page - 1) * limit;
+    const { items, total } = await getProductsDao({ skip, limit });
+    const totalPages = Math.ceil(total / limit);
+    return {
+        items,
+        pagination: { page, limit, total, totalPages },
+    };
 }
 
 export async function getProductById(id) {

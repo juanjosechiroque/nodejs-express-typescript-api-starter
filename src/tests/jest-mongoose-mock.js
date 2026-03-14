@@ -10,7 +10,12 @@ const createMockModel = () => {
         Object.assign(this, data);
     });
 
-    Model.find = jest.fn().mockResolvedValue([]);
+    const defaultFindChain = {};
+    defaultFindChain.skip = jest.fn().mockReturnValue(defaultFindChain);
+    defaultFindChain.limit = jest.fn().mockReturnValue(defaultFindChain);
+    defaultFindChain.lean = jest.fn().mockResolvedValue([]);
+    Model.find = jest.fn(() => defaultFindChain);
+    Model.countDocuments = jest.fn().mockResolvedValue(0);
     Model.findOne = jest.fn().mockResolvedValue(null);
     Model.findById = jest.fn().mockResolvedValue(null);
     Model.findByIdAndUpdate = jest.fn().mockResolvedValue(null);

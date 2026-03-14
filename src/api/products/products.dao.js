@@ -5,8 +5,12 @@ export async function createProductDao({ name, price, description }) {
     await product.save();
     return product;
 }
-export async function getProductsDao() {
-    return await Product.find({});
+export async function getProductsDao({ skip = 0, limit = 10 } = {}) {
+    const [items, total] = await Promise.all([
+        Product.find({}).skip(skip).limit(limit).lean(),
+        Product.countDocuments({}),
+    ]);
+    return { items, total };
 }
 
 export async function getProductByIdDao(id) {

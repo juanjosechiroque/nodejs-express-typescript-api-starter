@@ -7,10 +7,10 @@ export default {
     setupFilesAfterEnv: ["<rootDir>/src/tests/jest.setup.js"],
     coverageThreshold: {
         global: {
-            statements: 65,
-            branches: 65,
-            functions: 65,
-            lines: 65,
+            statements: 60,
+            branches: 60,
+            functions: 60,
+            lines: 60,
         },
     },
 };

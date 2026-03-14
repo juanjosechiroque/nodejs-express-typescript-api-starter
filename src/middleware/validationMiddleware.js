@@ -34,3 +34,21 @@ export function validateParams(schema) {
         next();
     };
 }
+
+export function validateQuery(schema) {
+    return (req, res, next) => {
+        const query = req.query ?? {};
+        const { error, value } = schema.validate(query, { abortEarly: false });
+        if (error) {
+            const validationErrors = error.details.map((detail) => ({
+                field: detail.context.key,
+                error: detail.message,
+            }));
+            const err = BadRequestError("Validation failed");
+            err.details = validationErrors;
+            return next(err);
+        }
+        req.validatedQuery = value;
+        next();
+    };
+}
