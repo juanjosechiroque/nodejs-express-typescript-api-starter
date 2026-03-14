@@ -23,9 +23,7 @@ export async function createProduct({ name, price, description }) {
 }
 
 export async function updateProduct({ id, ...fields }) {
-    const update = Object.fromEntries(
-        Object.entries(fields).filter(([, v]) => v !== undefined)
-    );
+    const update = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined));
     const result = await updateProductDao(id, update);
     if (!result) throw NotFoundError("Product not found");
     return result;

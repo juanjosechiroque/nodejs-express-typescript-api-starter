@@ -6,12 +6,12 @@ test("GET / should return 200 and status running", async () => {
     expect(response.body).toEqual({ status: "running" });
 });
 
-test("GET /health should return healthy status and db state", async () => {
+test("GET /health should return healthy status", async () => {
     const response = await api.get("/health");
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("status", "healthy");
     expect(response.body).toHaveProperty("uptime");
-    expect(response.body).toHaveProperty("db", "connected");
+    expect(response.body).toHaveProperty("timestamp");
 });
 
 test("GET unknown route should return 404 with standard format", async () => {

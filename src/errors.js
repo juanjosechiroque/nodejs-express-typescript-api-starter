@@ -11,5 +11,4 @@ export const BadRequestError = (errorMessage) =>
 export const UnauthorizedError = (errorMessage) =>
     createAppError(errorMessage, "UnauthorizedError", 401);
 
-export const NotFoundError = (errorMessage) =>
-    createAppError(errorMessage, "NotFoundError", 404);
+export const NotFoundError = (errorMessage) => createAppError(errorMessage, "NotFoundError", 404);

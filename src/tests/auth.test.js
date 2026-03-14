@@ -14,12 +14,10 @@ describe("POST /auth/signup", () => {
             __v: 0,
         };
 
-        mockMongoose
-            .model("User")
-            .prototype.save.mockImplementationOnce(function () {
-                Object.assign(this, userMocked);
-                return Promise.resolve(this);
-            });
+        mockMongoose.model("User").prototype.save.mockImplementationOnce(function () {
+            Object.assign(this, userMocked);
+            return Promise.resolve(this);
+        });
 
         const response = await api.post("/auth/signup").send(data);
 
@@ -36,9 +34,7 @@ describe("POST /auth/signup", () => {
         const response = await api.post("/auth/signup").send(data);
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe(
-            "Email address is already registered"
-        );
+        expect(response.body.message).toBe("Email address is already registered");
     });
 
     test("should return an error when input is invalid", async () => {
@@ -53,9 +49,7 @@ describe("POST /auth/signup", () => {
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("message");
-        expect(response.body.message).toMatch(
-            /8 characters|length|Validation/i
-        );
+        expect(response.body.message).toMatch(/8 characters|length|Validation/i);
     });
 });
 

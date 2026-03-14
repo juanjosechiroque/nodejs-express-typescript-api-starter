@@ -5,9 +5,7 @@ export const authenticate = (req, res, next) => {
     const authHeader = req.header("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer")) {
-        return next(
-            UnauthorizedError("Authorization header missing or invalid")
-        );
+        return next(UnauthorizedError("Authorization header missing or invalid"));
     }
 
     const token = authHeader.slice(7).trim();

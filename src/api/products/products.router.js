@@ -7,10 +7,7 @@ import {
     deleteProductHandler,
 } from "./products.controller.js";
 import { authenticate } from "../../middleware/authMiddleware.js";
-import {
-    validate,
-    validateParams,
-} from "../../middleware/validationMiddleware.js";
+import { validate, validateParams } from "../../middleware/validationMiddleware.js";
 import {
     createProductSchema,
     updateProductSchema,
@@ -21,12 +18,7 @@ const router = Router();
 
 router.get("/", getProductsHandler);
 router.get("/:id", validateParams(productIdParamSchema), getProductByIdHandler);
-router.post(
-    "/",
-    authenticate,
-    validate(createProductSchema),
-    createProductHandler
-);
+router.post("/", authenticate, validate(createProductSchema), createProductHandler);
 router.put(
     "/:id",
     authenticate,
@@ -35,11 +27,6 @@ router.put(
     updateProductHandler
 );
 
-router.delete(
-    "/:id",
-    authenticate,
-    validateParams(productIdParamSchema),
-    deleteProductHandler
-);
+router.delete("/:id", authenticate, validateParams(productIdParamSchema), deleteProductHandler);
 
 export default router;
