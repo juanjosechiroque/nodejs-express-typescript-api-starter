@@ -46,7 +46,8 @@ export async function createProductHandler(req, res, next) {
 export async function updateProductHandler(req, res, next) {
     try {
         const { id } = req.params;
-        const result = await updateProduct({ id, ...req.body });
+        const { name, price, description } = req.body;
+        const result = await updateProduct({ id, name, price, description });
         sendResponse(res, 200, result, "Product updated");
     } catch (error) {
         next(error);
