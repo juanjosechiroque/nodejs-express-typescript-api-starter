@@ -22,6 +22,8 @@ export default defineConfig([
             },
         },
         rules: {
+            // Errores de dominio (p. ej. JWT inválido) no deben encadenar el error interno al cliente.
+            "preserve-caught-error": "off",
             "no-unused-vars": [
                 "error",
                 {

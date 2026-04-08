@@ -44,3 +44,4 @@ Thumbs.db
 
 # Output of npm pack
 *.tgz
+.DS_Store
