@@ -8,6 +8,7 @@ import {
 } from "./products.controller.js";
 import { authenticate } from "../../middleware/authMiddleware.js";
 import { validate, validateParams, validateQuery } from "../../middleware/validationMiddleware.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 import {
     createProductSchema,
     updateProductSchema,
@@ -17,17 +18,22 @@ import {
 
 const router = Router();
 
-router.get("/", validateQuery(listProductsQuerySchema), getProductsHandler);
-router.get("/:id", validateParams(productIdParamSchema), getProductByIdHandler);
-router.post("/", authenticate, validate(createProductSchema), createProductHandler);
+router.get("/", validateQuery(listProductsQuerySchema), asyncHandler(getProductsHandler));
+router.get("/:id", validateParams(productIdParamSchema), asyncHandler(getProductByIdHandler));
+router.post("/", authenticate, validate(createProductSchema), asyncHandler(createProductHandler));
 router.put(
     "/:id",
     authenticate,
     validateParams(productIdParamSchema),
     validate(updateProductSchema),
-    updateProductHandler
+    asyncHandler(updateProductHandler)
 );
 
-router.delete("/:id", authenticate, validateParams(productIdParamSchema), deleteProductHandler);
+router.delete(
+    "/:id",
+    authenticate,
+    validateParams(productIdParamSchema),
+    asyncHandler(deleteProductHandler)
+);
 
 export default router;
