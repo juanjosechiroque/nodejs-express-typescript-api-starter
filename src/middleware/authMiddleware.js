@@ -1,24 +1,23 @@
 import { verifyToken } from "../utils/jwt.js";
 import { UnauthorizedError } from "../errors.js";
 
+const bearerTokenRegex = /^Bearer\s+(\S+)$/i;
+
 export const authenticate = (req, res, next) => {
     const authHeader = req.header("Authorization");
+    const match = authHeader?.match(bearerTokenRegex);
 
-    if (!authHeader || !authHeader.startsWith("Bearer")) {
+    if (!match) {
         return next(UnauthorizedError("Authorization header missing or invalid"));
     }
 
-    const token = authHeader.slice(7).trim();
-
-    if (!token || token === "") {
-        return next(UnauthorizedError("Access denied"));
-    }
+    const token = match[1];
 
     try {
         const decoded = verifyToken(token);
         req.user = decoded;
         next();
     } catch (error) {
-        return next(UnauthorizedError("Invalid or expired token"));
+        return next(error);
     }
 };

@@ -13,15 +13,20 @@ export async function registerUser({ email, password }) {
         throw BadRequestError(EMAIL_ALREADY_REGISTERED_MESSAGE);
     }
 
+    let user;
     try {
-        await createUserDao({ email: normalizedEmail, password });
+        user = await createUserDao({ email: normalizedEmail, password });
     } catch (err) {
         if (err.code === 11000) {
             throw BadRequestError(EMAIL_ALREADY_REGISTERED_MESSAGE);
         }
         throw err;
     }
-    const token = generateToken({ email: normalizedEmail });
+
+    const token = generateToken({
+        sub: user._id.toString(),
+        email: normalizedEmail,
+    });
     return token;
 }
 
@@ -38,5 +43,8 @@ export async function loginUser({ email, password }) {
         throw UnauthorizedError("Invalid email or password");
     }
 
-    return generateToken({ email: normalizedEmail });
+    return generateToken({
+        sub: user._id.toString(),
+        email: normalizedEmail,
+    });
 }

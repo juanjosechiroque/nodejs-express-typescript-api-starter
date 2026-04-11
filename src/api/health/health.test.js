@@ -1,4 +1,4 @@
-const { api } = await import("../../tests/helpers.js");
+const { api, V1 } = await import("../../tests/helpers.js");
 
 test("GET / should return 200 and status running", async () => {
     const response = await api.get("/");
@@ -6,8 +6,8 @@ test("GET / should return 200 and status running", async () => {
     expect(response.body).toEqual({ status: "running" });
 });
 
-test("GET /health should return healthy status", async () => {
-    const response = await api.get("/health");
+test("GET /v1/health should return healthy status", async () => {
+    const response = await api.get(`${V1}/health`);
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("status", "healthy");
     expect(response.body).toHaveProperty("uptime");

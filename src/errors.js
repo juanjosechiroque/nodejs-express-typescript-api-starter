@@ -8,7 +8,7 @@ function createAppError(message, code, statusCode) {
 export const BadRequestError = (errorMessage) =>
     createAppError(errorMessage, "BadRequestError", 400);
 
-export const UnauthorizedError = (errorMessage) =>
-    createAppError(errorMessage, "UnauthorizedError", 401);
+export const UnauthorizedError = (errorMessage, errorCode = "UnauthorizedError") =>
+    createAppError(errorMessage, errorCode, 401);
 
 export const NotFoundError = (errorMessage) => createAppError(errorMessage, "NotFoundError", 404);

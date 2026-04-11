@@ -1,9 +1,9 @@
 import { jest } from "@jest/globals";
 import mockMongoose from "../../tests/jest-mongoose-mock.js";
 
-const { api } = await import("../../tests/helpers.js");
+const { api, V1 } = await import("../../tests/helpers.js");
 
-describe("GET /products", () => {
+describe(`GET ${V1}/products`, () => {
     test("should return a list of products with items and pagination", async () => {
         const productsMock = [
             { _id: "1", name: "Mocked Product 1", price: 100 },
@@ -16,7 +16,7 @@ describe("GET /products", () => {
         mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
         mockMongoose.model("Product").countDocuments.mockResolvedValueOnce(productsMock.length);
 
-        const response = await api.get("/products");
+        const response = await api.get(`${V1}/products`);
 
         expect(response.status).toBe(200);
         expect(response.body.data).toHaveProperty("items");
@@ -38,7 +38,7 @@ describe("GET /products", () => {
         mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
         mockMongoose.model("Product").countDocuments.mockResolvedValueOnce(50);
 
-        const response = await api.get("/products?page=2&limit=10");
+        const response = await api.get(`${V1}/products?page=2&limit=10`);
 
         expect(response.status).toBe(200);
         expect(response.body.data.pagination).toEqual({
@@ -56,7 +56,7 @@ describe("GET /products", () => {
         findChain.lean = jest.fn().mockRejectedValue(new Error("DB error"));
         mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
 
-        const response = await api.get("/products");
+        const response = await api.get(`${V1}/products`);
 
         expect(response.status).toBe(500);
         expect(response.body).toHaveProperty("code");
@@ -66,7 +66,7 @@ describe("GET /products", () => {
 
 const validMongoId = "507f1f77bcf86cd799439011";
 
-describe("GET /products/:id", () => {
+describe(`GET ${V1}/products/:id`, () => {
     test("should return a product by id", async () => {
         const productMock = {
             _id: validMongoId,
@@ -75,7 +75,7 @@ describe("GET /products/:id", () => {
         };
         mockMongoose.model("Product").findById.mockResolvedValueOnce(productMock);
 
-        const response = await api.get(`/products/${validMongoId}`);
+        const response = await api.get(`${V1}/products/${validMongoId}`);
 
         expect(response.status).toBe(200);
         expect(response.body.data.name).toBe(productMock.name);
@@ -85,27 +85,27 @@ describe("GET /products/:id", () => {
     test("should return 404 when product not found", async () => {
         mockMongoose.model("Product").findById.mockResolvedValueOnce(null);
 
-        const response = await api.get(`/products/${validMongoId}`);
+        const response = await api.get(`${V1}/products/${validMongoId}`);
 
         expect(response.status).toBe(404);
         expect(response.body).toHaveProperty("message", "Product not found");
     });
 
     test("should return 400 when id format is invalid", async () => {
-        const response = await api.get("/products/invalid-id");
+        const response = await api.get(`${V1}/products/invalid-id`);
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("message", "Validation failed");
     });
 });
 
-describe("POST /products", () => {
+describe(`POST ${V1}/products`, () => {
     test("should return a new product", async () => {
         const data = { name: "test", price: 10 };
         mockMongoose.model("Product").find.mockResolvedValueOnce(data);
 
         const response = await api
-            .post("/products")
+            .post(`${V1}/products`)
             .set("Authorization", "Bearer valid-token")
             .send(data);
 
@@ -117,38 +117,43 @@ describe("POST /products", () => {
     });
 
     test("should return an error when input is invalid", async () => {
-        const response = await api.post("/products").set("Authorization", "Bearer valid-token");
+        const response = await api
+            .post(`${V1}/products`)
+            .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("message");
     });
 
     test("should return an error when token is unauthorized", async () => {
-        const response = await api.post("/products").set("Authorization", "random token");
+        const response = await api.post(`${V1}/products`).set("Authorization", "random token");
 
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty("message", "Authorization header missing or invalid");
     });
 
     test("should return an error when token is empty", async () => {
-        const response = await api.post("/products").set("Authorization", "Bearer ");
+        const response = await api.post(`${V1}/products`).set("Authorization", "Bearer ");
 
         expect(response.status).toBe(401);
-        expect(response.body).toHaveProperty("message", "Access denied");
+        expect(response.body).toHaveProperty("message", "Authorization header missing or invalid");
     });
 
     test("should return an error when token is invalid", async () => {
-        const response = await api.post("/products").set("Authorization", "Bearer invalid-token");
+        const response = await api
+            .post(`${V1}/products`)
+            .set("Authorization", "Bearer invalid-token");
 
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty("message", "Invalid or expired token");
+        expect(response.body).toHaveProperty("code", "INVALID_TOKEN");
     });
 
     test("should return 500 when createProduct throws", async () => {
         mockMongoose.model("Product").prototype.save.mockRejectedValueOnce(new Error("DB error"));
 
         const response = await api
-            .post("/products")
+            .post(`${V1}/products`)
             .set("Authorization", "Bearer valid-token")
             .send({ name: "test", price: 10 });
 
@@ -158,13 +163,13 @@ describe("POST /products", () => {
     });
 });
 
-describe("PUT /products/:id", () => {
+describe(`PUT ${V1}/products/:id`, () => {
     test("should return the updated product", async () => {
         const data = { name: "updated", price: 20 };
         mockMongoose.model("Product").findByIdAndUpdate.mockResolvedValueOnce(data);
 
         const response = await api
-            .put(`/products/${validMongoId}`)
+            .put(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token")
             .send(data);
 
@@ -177,7 +182,7 @@ describe("PUT /products/:id", () => {
 
     test("should return an error when input is invalid", async () => {
         const response = await api
-            .put(`/products/${validMongoId}`)
+            .put(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(400);
@@ -186,7 +191,7 @@ describe("PUT /products/:id", () => {
 
     test("should return 400 when id format is invalid", async () => {
         const response = await api
-            .put("/products/invalid-id")
+            .put(`${V1}/products/invalid-id`)
             .set("Authorization", "Bearer valid-token")
             .send({ name: "updated", price: 20 });
 
@@ -198,7 +203,7 @@ describe("PUT /products/:id", () => {
         mockMongoose.model("Product").findByIdAndUpdate.mockResolvedValueOnce(null);
 
         const response = await api
-            .put(`/products/${validMongoId}`)
+            .put(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token")
             .send({ name: "updated", price: 20 });
 
@@ -208,7 +213,7 @@ describe("PUT /products/:id", () => {
     });
 });
 
-describe("DELETE /products/:id", () => {
+describe(`DELETE ${V1}/products/:id`, () => {
     test("should delete a product", async () => {
         const productMock = {
             _id: validMongoId,
@@ -218,7 +223,7 @@ describe("DELETE /products/:id", () => {
         mockMongoose.model("Product").findByIdAndDelete.mockResolvedValueOnce(productMock);
 
         const response = await api
-            .delete(`/products/${validMongoId}`)
+            .delete(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(200);
@@ -226,7 +231,7 @@ describe("DELETE /products/:id", () => {
 
     test("should return 400 when id format is invalid", async () => {
         const response = await api
-            .delete("/products/invalid-id")
+            .delete(`${V1}/products/invalid-id`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(400);
@@ -237,7 +242,7 @@ describe("DELETE /products/:id", () => {
         mockMongoose.model("Product").findByIdAndDelete.mockResolvedValueOnce(null);
 
         const response = await api
-            .delete(`/products/${validMongoId}`)
+            .delete(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(404);

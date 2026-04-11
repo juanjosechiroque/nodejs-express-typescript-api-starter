@@ -13,6 +13,10 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+    res.json({ status: "running" });
+});
+
 if (process.env.NODE_ENV !== "test") {
     app.use(
         rateLimit({
@@ -24,7 +28,7 @@ if (process.env.NODE_ENV !== "test") {
     );
 }
 
-app.use(router);
+app.use("/v1", router);
 app.use(notFound);
 app.use(errorGenericHandler);
 

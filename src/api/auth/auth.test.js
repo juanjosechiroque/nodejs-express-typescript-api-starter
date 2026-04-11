@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import mockMongoose from "../../tests/jest-mongoose-mock.js";
 
-const { api } = await import("../../tests/helpers.js");
+const { api, V1 } = await import("../../tests/helpers.js");
 
-describe("POST /auth/signup", () => {
+describe(`POST ${V1}/auth/signup`, () => {
     test("should return a new user", async () => {
         const data = { email: "test@example.com", password: "test1234" };
 
@@ -19,7 +19,7 @@ describe("POST /auth/signup", () => {
             return Promise.resolve(this);
         });
 
-        const response = await api.post("/auth/signup").send(data);
+        const response = await api.post(`${V1}/auth/signup`).send(data);
 
         expect(response.status).toBe(201);
         expect(response.body.data).toBe("valid-token");
@@ -31,20 +31,20 @@ describe("POST /auth/signup", () => {
         const userMocked = { _id: "1", email: "test@example.com" };
         mockMongoose.model("User").findOne.mockResolvedValueOnce(userMocked);
 
-        const response = await api.post("/auth/signup").send(data);
+        const response = await api.post(`${V1}/auth/signup`).send(data);
 
         expect(response.status).toBe(400);
         expect(response.body.message).toBe("Email address is already registered");
     });
 
     test("should return an error when input is invalid", async () => {
-        const response = await api.post("/auth/signup");
+        const response = await api.post(`${V1}/auth/signup`);
         expect(response.status).toBe(400);
     });
 
     test("should return 400 when password has less than 8 characters", async () => {
         const response = await api
-            .post("/auth/signup")
+            .post(`${V1}/auth/signup`)
             .send({ email: "test@example.com", password: "1234567" });
 
         expect(response.status).toBe(400);
@@ -53,7 +53,7 @@ describe("POST /auth/signup", () => {
     });
 });
 
-describe("POST /auth/login", () => {
+describe(`POST ${V1}/auth/login`, () => {
     test("should return token when credentials are valid", async () => {
         const password = "test1234";
         const hash = await bcrypt.hash(password, 10);
@@ -64,7 +64,7 @@ describe("POST /auth/login", () => {
         });
 
         const response = await api
-            .post("/auth/login")
+            .post(`${V1}/auth/login`)
             .send({ email: "test@example.com", password });
 
         expect(response.status).toBe(200);
@@ -75,7 +75,7 @@ describe("POST /auth/login", () => {
         mockMongoose.model("User").findOne.mockResolvedValueOnce(null);
 
         const response = await api
-            .post("/auth/login")
+            .post(`${V1}/auth/login`)
             .send({ email: "unknown@example.com", password: "test1234" });
 
         expect(response.status).toBe(401);
@@ -91,7 +91,7 @@ describe("POST /auth/login", () => {
         });
 
         const response = await api
-            .post("/auth/login")
+            .post(`${V1}/auth/login`)
             .send({ email: "test@example.com", password: "wrongpassword" });
 
         expect(response.status).toBe(401);
@@ -99,7 +99,7 @@ describe("POST /auth/login", () => {
     });
 
     test("should return 400 when input is invalid", async () => {
-        const response = await api.post("/auth/login");
+        const response = await api.post(`${V1}/auth/login`);
         expect(response.status).toBe(400);
     });
 });
