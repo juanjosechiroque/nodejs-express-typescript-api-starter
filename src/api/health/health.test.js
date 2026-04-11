@@ -1,4 +1,4 @@
-const { api } = await import("./helpers.js");
+const { api } = await import("../../tests/helpers.js");
 
 test("GET / should return 200 and status running", async () => {
     const response = await api.get("/");

@@ -1,4 +1,4 @@
-import User from "./users.model.js";
+import User from "./user.model.js";
 
 export async function createUserDao({ email, password }) {
     const user = new User({ email, password });

@@ -1,7 +1,7 @@
 import { jest } from "@jest/globals";
-import mockMongoose from "./jest-mongoose-mock.js";
+import mockMongoose from "../../tests/jest-mongoose-mock.js";
 
-const { api } = await import("./helpers.js");
+const { api } = await import("../../tests/helpers.js");
 
 describe("GET /products", () => {
     test("should return a list of products with items and pagination", async () => {

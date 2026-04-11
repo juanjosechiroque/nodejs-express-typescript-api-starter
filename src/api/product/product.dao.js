@@ -1,4 +1,4 @@
-import Product from "./products.model.js";
+import Product from "./product.model.js";
 
 export async function createProductDao({ name, price, description }) {
     const product = new Product({ name, price, description });

@@ -1,5 +1,5 @@
 import { sendResponse } from "../../utils/response.js";
-import { registerUser, loginUser } from "../users/users.service.js";
+import { registerUser, loginUser } from "./auth.service.js";
 
 export async function registerUserHandler(req, res) {
     const { email, password } = req.body;

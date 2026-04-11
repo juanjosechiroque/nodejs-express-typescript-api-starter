@@ -5,7 +5,7 @@ import {
     getProductByIdDao,
     updateProductDao,
     deleteProductDao,
-} from "./products.dao.js";
+} from "./product.dao.js";
 
 export async function getProducts({ page = 1, limit = 10 } = {}) {
     const skip = (page - 1) * limit;

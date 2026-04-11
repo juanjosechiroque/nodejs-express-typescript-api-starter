@@ -4,7 +4,7 @@ import {
     getProductById,
     updateProduct,
     deleteProduct,
-} from "./products.service.js";
+} from "./product.service.js";
 
 import { sendResponse } from "../../utils/response.js";
 

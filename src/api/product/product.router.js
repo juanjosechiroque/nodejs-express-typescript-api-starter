@@ -5,7 +5,7 @@ import {
     createProductHandler,
     updateProductHandler,
     deleteProductHandler,
-} from "./products.controller.js";
+} from "./product.controller.js";
 import { authenticate } from "../../middleware/authMiddleware.js";
 import { validate, validateParams, validateQuery } from "../../middleware/validationMiddleware.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
@@ -14,7 +14,7 @@ import {
     updateProductSchema,
     productIdParamSchema,
     listProductsQuerySchema,
-} from "./products.validation.js";
+} from "./product.validation.js";
 
 const router = Router();
 

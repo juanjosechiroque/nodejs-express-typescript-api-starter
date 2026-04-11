@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
-import mockMongoose from "./jest-mongoose-mock.js";
+import mockMongoose from "../../tests/jest-mongoose-mock.js";
 
-const { api } = await import("./helpers.js");
+const { api } = await import("../../tests/helpers.js");
 
 describe("POST /auth/signup", () => {
     test("should return a new user", async () => {

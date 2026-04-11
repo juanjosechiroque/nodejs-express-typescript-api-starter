@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { BadRequestError, UnauthorizedError } from "../../errors.js";
 import { generateToken } from "../../utils/jwt.js";
-import { createUserDao, existsEmailUserDao } from "./users.dao.js";
+import { createUserDao, existsEmailUserDao } from "./user.dao.js";
 
 const EMAIL_ALREADY_REGISTERED_MESSAGE = "Email address is already registered";
 
