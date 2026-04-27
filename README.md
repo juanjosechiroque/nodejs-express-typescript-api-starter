@@ -1,6 +1,6 @@
-# New Project Base
+# Express Mongo API Starter
 
-A clean, modern **Node.js** project base with **Express**, **MongoDB**, tests, and practical defaults for building a REST API.
+A production-minded **Node.js REST API starter** built with **Express 5**, **MongoDB**, JWT auth, validation, tests, and practical defaults for service-oriented backends.
 
 ## Features
 
@@ -13,7 +13,7 @@ A clean, modern **Node.js** project base with **Express**, **MongoDB**, tests, a
 - 🪝 **Husky** — `npm run validate` on pre-commit
 - 🔒 **Security** — Helmet, CORS, rate limiting
 - 📊 **Health** — monitoring endpoint
-- 🔄 **CI** — GitHub Actions runs lint, format check, and tests on `main`
+- 🔄 **CI/CD** — GitHub Actions validates, tests, builds the Docker image, and simulates deploy on `main`
 
 ## Quick Start
 
@@ -126,19 +126,11 @@ The **`auth`** feature is a minimal **register + login** flow: both endpoints re
 
 ### Adding new features
 
-Add a folder `src/api/<feature>/` and wire it in `src/router.js`. Use `asyncHandler` on async handlers.
+Features live under `src/api/<feature>/` and are wired in `src/router.js`.
 
-Typical files (add only what you need):
+Use `src/api/product/` as the reference module for CRUD routes, Joi validation, auth middleware, service/DAO/model separation, and feature-level tests.
 
-- **`{feature}.router.js`** — paths and middleware for that domain.
-- **`{feature}.validation.js`** — Joi schemas for inputs.
-- **`{feature}.controller.js`** — reads the request, calls the service, sends the response.
-- **`{feature}.service.js`** — business logic and rules.
-- **`{feature}.dao.js`** — database access for that domain.
-- **`{feature}.model.js`** — Mongoose schema when this feature owns persistence.
-- **`{feature}.test.js`** — optional; when present, put end-to-end API tests for that module here (for now this is the only style used in the repo).
-
-Use `src/api/product/` when you need a full HTTP module to copy from.
+Detailed development rules are documented in `.cursor/rules/api-architecture.mdc`.
 
 Husky runs `npm run validate` on each commit. Override once with `git commit --no-verify` if you must.
 
@@ -151,4 +143,4 @@ npm run test:coverage
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT.

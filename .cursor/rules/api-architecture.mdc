@@ -1,0 +1,100 @@
+---
+description: Development architecture rules for this Express 5 + MongoDB API
+alwaysApply: true
+---
+
+# Architecture Rules
+
+This project is a Node.js ESM REST API using Express 5, MongoDB/Mongoose, JWT, Joi, Jest/Supertest, Docker, and GitHub Actions.
+
+Follow these rules when adding or changing code.
+
+## Structure
+
+- Main runtime entrypoint: `index.js`.
+- Express app setup: `src/app.js`.
+- Versioned API router: `src/router.js`, mounted under `/v1`.
+- Environment config: `src/config.js`.
+- MongoDB connection: `src/database.js`.
+- Shared middleware: `src/middleware/`.
+- Shared utilities: `src/utils/`.
+- Feature modules: `src/api/{feature}/`.
+- Shared test helpers/mocks: `src/tests/`.
+
+Current features:
+
+- `auth`: signup/login HTTP feature.
+- `health`: health HTTP feature.
+- `product`: example CRUD HTTP feature.
+- `user`: support module used by auth; no HTTP routes yet.
+
+## Feature Pattern
+
+Organize by feature, not by global technical folders.
+
+For an HTTP feature, use:
+
+```text
+src/api/{feature}/
+  {feature}.router.js
+  {feature}.controller.js
+  {feature}.service.js
+  {feature}.validation.js   # when request validation is needed
+  {feature}.dao.js          # when persistence is needed
+  {feature}.model.js        # when persistence is owned by the feature
+  {feature}.test.js         # when exposing HTTP behavior
+```
+
+For a support module with no routes, omit router/controller until HTTP endpoints are added.
+
+## Layer Responsibilities
+
+- `router`: define routes and attach middleware. Wrap async controllers with `asyncHandler(...)`.
+- `controller`: HTTP only. Read `req`, call the feature service, send response with `sendResponse(...)`.
+- `service`: business logic/orchestration. No Express `req`, `res`, or `next`.
+- `dao`: Mongoose/database access only. No HTTP concerns.
+- `model`: Mongoose schema/model, indexes, timestamps, serialization.
+- `validation`: Joi schemas for body, params, and query.
+- `middleware`: reusable HTTP middleware such as auth, validation, not-found, and error handling.
+
+Flow must be:
+
+```text
+router -> controller -> service -> dao -> model
+```
+
+Controllers must not access the database directly.
+
+## API Conventions
+
+- Public API lives under `/v1`.
+- Successful responses should use:
+
+```js
+sendResponse(res, status, data, message);
+```
+
+- Errors should use factories from `src/errors.js` and flow into centralized error handling.
+- Use Joi validation middleware for request `body`, `params`, and `query`.
+- Use `req.validatedQuery` for validated query params.
+- Use `authenticate` for routes requiring `Authorization: Bearer <jwt>`.
+- Keep public and protected routes explicit in the router.
+- Preserve existing API contracts unless intentionally changing them.
+
+## Config Rules
+
+- Add environment variables in `src/config.js`.
+- Required env vars currently: `MONGODB_URI`, `JWT_SECRET`.
+- Avoid reading `process.env` directly from feature code.
+
+## Testing Rules
+
+- Use Jest + Supertest for HTTP behavior.
+- Put feature tests next to the feature: `src/api/{feature}/{feature}.test.js`.
+- Test status codes, response shape, validation failures, auth failures, and important error paths.
+- Keep these commands green:
+
+```bash
+npm run validate
+npm test
+```
