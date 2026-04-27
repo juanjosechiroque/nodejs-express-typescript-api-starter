@@ -15,14 +15,12 @@ A production-minded **Node.js REST API starter** built with **Express 5**, **Mon
 - 📊 **Health** — monitoring endpoint
 - 🔄 **CI/CD** — GitHub Actions validates, tests, builds the Docker image, and simulates deploy on `main`
 
-## Quick Start
-
-### Prerequisites
+## Requirements
 
 - Node.js 24+
 - npm
 
-### Installation
+## Quick Start
 
 1. **Clone the repository**
 
@@ -52,20 +50,6 @@ A production-minded **Node.js REST API starter** built with **Express 5**, **Mon
 
     By default the app listens on port 3000.
 
-## Environment variables
-
-Copy `.env.example` to `.env`. In non-production, variables are loaded with `dotenv` (see `src/config.js`).
-
-| Variable                    | Required | Description                                                                             |
-| --------------------------- | -------- | --------------------------------------------------------------------------------------- |
-| `PORT`                      | No       | HTTP port (default `3000`).                                                             |
-| `NODE_ENV`                  | No       | Typical values: `development`, `production`. Affects env loading.                       |
-| `MONGODB_URI`               | **Yes**  | MongoDB connection string. The app exits at startup if missing or empty.                |
-| `JWT_SECRET`                | **Yes**  | Secret used to sign JWTs. Must be set in every environment.                             |
-| `JWT_EXPIRATION_TIME`       | No       | JWT lifetime (default `1h`).                                                            |
-| `RATE_LIMIT_WINDOW_MINUTES` | No       | Length of the sliding window in **minutes** (default `1`).                              |
-| `RATE_LIMIT_MAX`            | No       | Max **HTTP requests per IP** allowed inside that window, not a duration (default `60`). |
-
 ## Available Scripts
 
 | Script                  | Description             |
@@ -77,23 +61,20 @@ Copy `.env.example` to `.env`. In non-production, variables are loaded with `dot
 | `npm test`              | Jest                    |
 | `npm run test:coverage` | Jest + coverage         |
 
-## Project Structure
+## Environment variables
 
-```text
-src/
-├── app.js
-├── router.js
-├── config.js
-├── database.js
-├── middleware/
-├── utils/
-├── api/
-│   ├── auth/
-│   ├── health/
-│   ├── product/
-│   └── user/
-└── tests/
-```
+Copy `.env.example` to `.env`. In non-production, variables are loaded with `dotenv` (see `src/config.js`).
+
+| Variable                    | Required | Description                                                                                                            |
+| --------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                      | No       | HTTP port (default `3000`).                                                                                            |
+| `NODE_ENV`                  | No       | Typical values: `development`, `production`. Affects env loading.                                                      |
+| `MONGODB_URI`               | **Yes**  | MongoDB connection string. The app exits at startup if missing or empty.                                               |
+| `JWT_SECRET`                | **Yes**  | Secret used to sign JWTs. Must be set in every environment.                                                            |
+| `JWT_EXPIRATION_TIME`       | No       | JWT lifetime (default `1h`).                                                                                           |
+| `CORS_ALLOWED_ORIGINS`      | No       | Comma-separated allowed origins. CORS is only enabled when this is set. Use `*` to allow all origins.                  |
+| `RATE_LIMIT_WINDOW_MINUTES` | No       | Length of the sliding window in **minutes**. Rate limiting is only enabled when this and `RATE_LIMIT_MAX` are set.     |
+| `RATE_LIMIT_MAX`            | No       | Max **HTTP requests per IP** allowed inside that window. Must be configured together with `RATE_LIMIT_WINDOW_MINUTES`. |
 
 ## API Endpoints
 
@@ -121,6 +102,24 @@ The **`auth`** feature is a minimal **register + login** flow: both endpoints re
 - `POST /v1/products` — create; **JWT required**
 - `PUT /v1/products/:id` — update; **JWT required**
 - `DELETE /v1/products/:id` — delete; **JWT required**
+
+## Project Structure
+
+```text
+src/
+├── app.js
+├── router.js
+├── config.js
+├── database.js
+├── middleware/
+├── utils/
+├── api/
+│   ├── auth/
+│   ├── health/
+│   ├── product/
+│   └── user/
+└── tests/
+```
 
 ## Development
 
