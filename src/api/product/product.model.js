@@ -11,14 +11,6 @@ const productSchema = new Schema(
     }
 );
 
-productSchema.set("toJSON", {
-    versionKey: false,
-    transform: function (doc, ret) {
-        ret.id = ret._id.toHexString();
-        delete ret._id;
-    },
-});
-
 const Product = model("Product", productSchema, "products");
 
 export default Product;
