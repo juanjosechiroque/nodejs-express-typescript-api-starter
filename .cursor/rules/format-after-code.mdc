@@ -1,7 +1,6 @@
 ---
-
-description: Run format after generating or editing code
-alwaysApply: true
+description: Run npm run format after editing source files
+globs: ["src/**/*.js"]
 ---
 
 # Format After Code Changes
