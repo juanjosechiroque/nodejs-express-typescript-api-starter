@@ -4,16 +4,17 @@ A production-minded **Node.js REST API starter** built with **Express 5**, **Mon
 
 ## Features
 
-- ⚡ **JavaScript (ESM)** — native modules
-- 🚀 **Express 5** — HTTP API and middleware
-- 🔐 **JWT** — token-based auth
-- 📋 **Joi** — request validation
-- 🧪 **Jest** — end-to-end API tests next to each feature
-- 📝 **ESLint & Prettier** — enforced style and static checks
-- 🪝 **Husky** — `npm run validate` on pre-commit
-- 🔒 **Security** — Helmet, CORS, rate limiting
-- 📊 **Health** — monitoring endpoint
-- 🔄 **CI/CD** — GitHub Actions validates, tests, builds the Docker image, and simulates deploy on `main`
+- **JavaScript (ESM)** — native modules
+- **Express 5** — HTTP API and middleware
+- **JWT** — token-based auth
+- **Joi** — request validation
+- **Jest** — end-to-end API tests next to each feature
+- **ESLint & Prettier** — enforced style and static checks
+- **Husky** — `npm run validate` on pre-commit
+- **Security** — Helmet, CORS, rate limiting, per-route auth limits
+- **Structured logging** — Pino (JSON in production, pretty-printed in development)
+- **Health** — monitoring endpoint
+- **CI/CD** — GitHub Actions validates, tests, and builds the Docker image on `main`
 
 ## Requirements
 
@@ -97,7 +98,7 @@ The **`auth`** feature is a minimal **register + login** flow: both endpoints re
 
 ### Products (example CRUD)
 
-- `GET /v1/products` — list (`page`, `limit` query params); public
+- `GET /v1/products` — list (`cursor`, `limit` query params); public
 - `GET /v1/products/:id` — get by id; public
 - `POST /v1/products` — create; **JWT required**
 - `PUT /v1/products/:id` — update; **JWT required**

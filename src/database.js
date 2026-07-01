@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
 import { MONGODB_URI } from "./config.js";
 import { toJSONPlugin } from "./utils/toJSONPlugin.js";
+import logger from "./utils/logger.js";
 
 mongoose.plugin(toJSONPlugin);
 
 export async function connectDB() {
     try {
         await mongoose.connect(MONGODB_URI);
-        console.log("MongoDB Connected");
+        logger.info("MongoDB connected");
     } catch (error) {
-        console.error(`Error: ${error.message}`);
+        logger.error({ err: error }, "MongoDB connection failed");
         process.exit(1);
     }
 }

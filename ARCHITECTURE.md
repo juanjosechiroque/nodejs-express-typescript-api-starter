@@ -124,9 +124,15 @@ Protected routes use the `authenticate` middleware, which validates `Authorizati
 
 Public and protected routes are declared explicitly in each router — no global auth applied by default.
 
+Auth endpoints (`/signup`, `/login`) apply a fixed rate limit (10 requests per 15 minutes per IP). This is intentionally not configurable — it is a security control, not an operational parameter.
+
 ## Environment configuration
 
 All environment variables are declared and validated at startup in `src/config.js`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing. Feature code imports named constants from `config.js` — never reads `process.env` directly.
+
+## Logging
+
+Structured JSON logging via [Pino](https://getpino.io). Import `src/utils/logger.js` and use `logger.info()` / `logger.error()` — never `console.log`. In development, `pino-pretty` formats output automatically. In production, raw JSON goes to stdout for log aggregators. HTTP request logging (method, URL, status, response time) is handled by `pino-http` middleware. `LOG_LEVEL` controls verbosity (default: `info`).
 
 ## Pagination
 
