@@ -4,57 +4,70 @@ import mockMongoose from "../../tests/jest-mongoose-mock.js";
 const { api, V1 } = await import("../../tests/helpers.js");
 
 describe(`GET ${V1}/products`, () => {
-    test("should return a list of products with items and pagination", async () => {
+    function makeFindChain(items) {
+        const chain = {};
+        chain.limit = jest.fn().mockReturnValue(chain);
+        chain.sort = jest.fn().mockReturnValue(chain);
+        chain.lean = jest.fn().mockResolvedValue(items);
+        return chain;
+    }
+
+    test("should return items with cursor pagination shape", async () => {
         const productsMock = [
-            { _id: "1", name: "Mocked Product 1", price: 100 },
-            { _id: "2", name: "Mocked Product 2", price: 200 },
+            { _id: { toString: () => "aaa" }, name: "Product 1", price: 100 },
+            { _id: { toString: () => "bbb" }, name: "Product 2", price: 200 },
         ];
-        const findChain = {};
-        findChain.skip = jest.fn().mockReturnValue(findChain);
-        findChain.limit = jest.fn().mockReturnValue(findChain);
-        findChain.lean = jest.fn().mockResolvedValue(productsMock);
-        mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
-        mockMongoose.model("Product").countDocuments.mockResolvedValueOnce(productsMock.length);
+        mockMongoose.model("Product").find.mockReturnValueOnce(makeFindChain(productsMock));
 
         const response = await api.get(`${V1}/products`);
 
         expect(response.status).toBe(200);
         expect(response.body.data).toHaveProperty("items");
         expect(response.body.data).toHaveProperty("pagination");
-        expect(response.body.data.items).toHaveLength(productsMock.length);
-        expect(response.body.data.pagination).toEqual({
-            page: 1,
+        expect(response.body.data.items).toHaveLength(2);
+        expect(response.body.data.pagination).toMatchObject({
             limit: 10,
-            total: 2,
-            totalPages: 1,
+            hasMore: false,
+            nextCursor: null,
         });
     });
 
-    test("should accept page and limit query params", async () => {
-        const findChain = {};
-        findChain.skip = jest.fn().mockReturnValue(findChain);
-        findChain.limit = jest.fn().mockReturnValue(findChain);
-        findChain.lean = jest.fn().mockResolvedValue([]);
-        mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
-        mockMongoose.model("Product").countDocuments.mockResolvedValueOnce(50);
+    test("should return nextCursor and hasMore true when more items exist", async () => {
+        const productsMock = Array.from({ length: 11 }, (_, i) => ({
+            _id: { toString: () => `id${i}` },
+            name: `Product ${i}`,
+            price: i * 10,
+        }));
+        mockMongoose.model("Product").find.mockReturnValueOnce(makeFindChain(productsMock));
 
-        const response = await api.get(`${V1}/products?page=2&limit=10`);
+        const response = await api.get(`${V1}/products?limit=10`);
 
         expect(response.status).toBe(200);
-        expect(response.body.data.pagination).toEqual({
-            page: 2,
-            limit: 10,
-            total: 50,
-            totalPages: 5,
-        });
+        expect(response.body.data.pagination.hasMore).toBe(true);
+        expect(response.body.data.pagination.nextCursor).toBe("id9");
+        expect(response.body.data.items).toHaveLength(10);
+    });
+
+    test("should accept limit query param", async () => {
+        mockMongoose.model("Product").find.mockReturnValueOnce(makeFindChain([]));
+
+        const response = await api.get(`${V1}/products?limit=5`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.pagination.limit).toBe(5);
+    });
+
+    test("should return 400 when cursor format is invalid", async () => {
+        const response = await api.get(`${V1}/products?cursor=invalid`);
+        expect(response.status).toBe(400);
     });
 
     test("should return 500 when getProducts throws", async () => {
-        const findChain = {};
-        findChain.skip = jest.fn().mockReturnValue(findChain);
-        findChain.limit = jest.fn().mockReturnValue(findChain);
-        findChain.lean = jest.fn().mockRejectedValue(new Error("DB error"));
-        mockMongoose.model("Product").find.mockReturnValueOnce(findChain);
+        const chain = {};
+        chain.limit = jest.fn().mockReturnValue(chain);
+        chain.sort = jest.fn().mockReturnValue(chain);
+        chain.lean = jest.fn().mockRejectedValue(new Error("DB error"));
+        mockMongoose.model("Product").find.mockReturnValueOnce(chain);
 
         const response = await api.get(`${V1}/products`);
 

@@ -11,11 +11,10 @@ const createMockModel = () => {
     });
 
     const defaultFindChain = {};
-    defaultFindChain.skip = jest.fn().mockReturnValue(defaultFindChain);
     defaultFindChain.limit = jest.fn().mockReturnValue(defaultFindChain);
+    defaultFindChain.sort = jest.fn().mockReturnValue(defaultFindChain);
     defaultFindChain.lean = jest.fn().mockResolvedValue([]);
     Model.find = jest.fn(() => defaultFindChain);
-    Model.countDocuments = jest.fn().mockResolvedValue(0);
     Model.findOne = jest.fn().mockResolvedValue(null);
     const defaultFindByIdChain = { lean: jest.fn().mockResolvedValue(null) };
     Model.findById = jest.fn(() => defaultFindByIdChain);
@@ -36,6 +35,9 @@ export const mockMongoose = {
     Schema: jest.fn(() => mockSchema()),
     model: jest.fn((modelName) => models[modelName] || createMockModel()),
     connection: { readyState: 1 },
+    Types: {
+        ObjectId: jest.fn((id) => id),
+    },
 };
 
 export default mockMongoose;

@@ -27,6 +27,9 @@ export const updateProductSchema = Joi.object()
     .min(1);
 
 export const listProductsQuerySchema = Joi.object({
-    page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10),
+    cursor: Joi.string()
+        .length(24)
+        .pattern(/^[0-9a-fA-F]{24}$/)
+        .optional(),
 });

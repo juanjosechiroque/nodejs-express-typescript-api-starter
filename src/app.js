@@ -21,12 +21,6 @@ if (CORS_ALLOWED_ORIGINS) {
     );
 }
 
-app.use(express.json());
-
-app.get("/", (req, res) => {
-    res.json({ status: "running" });
-});
-
 if (process.env.NODE_ENV !== "test" && RATE_LIMIT_WINDOW_MINUTES && RATE_LIMIT_MAX) {
     app.use(
         rateLimit({
@@ -37,6 +31,12 @@ if (process.env.NODE_ENV !== "test" && RATE_LIMIT_WINDOW_MINUTES && RATE_LIMIT_M
         })
     );
 }
+
+app.use(express.json({ limit: "10kb" }));
+
+app.get("/", (req, res) => {
+    res.json({ status: "running" });
+});
 
 app.use("/v1", router);
 app.use(notFound);

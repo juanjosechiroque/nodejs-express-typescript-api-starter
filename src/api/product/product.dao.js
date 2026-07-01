@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import Product from "./product.model.js";
 
 export async function createProductDao({ name, price, description }) {
@@ -5,12 +6,16 @@ export async function createProductDao({ name, price, description }) {
     await product.save();
     return product;
 }
-export async function getProductsDao({ skip = 0, limit = 10 } = {}) {
-    const [items, total] = await Promise.all([
-        Product.find({}).skip(skip).limit(limit).lean(),
-        Product.countDocuments({}),
-    ]);
-    return { items, total };
+
+export async function getProductsDao({ cursor, limit = 10 } = {}) {
+    const query = cursor ? { _id: { $gt: new Types.ObjectId(cursor) } } : {};
+    const items = await Product.find(query)
+        .limit(limit + 1)
+        .sort({ _id: 1 })
+        .lean();
+    const hasMore = items.length > limit;
+    if (hasMore) items.pop();
+    return { items, hasMore };
 }
 
 export async function getProductByIdDao(id) {

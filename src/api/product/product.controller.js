@@ -9,8 +9,8 @@ import {
 import { sendResponse } from "../../utils/response.js";
 
 export async function getProductsHandler(req, res) {
-    const { page, limit } = req.validatedQuery ?? req.query;
-    const result = await getProducts({ page, limit });
+    const { cursor, limit } = req.validatedQuery;
+    const result = await getProducts({ cursor, limit });
     sendResponse(
         res,
         200,

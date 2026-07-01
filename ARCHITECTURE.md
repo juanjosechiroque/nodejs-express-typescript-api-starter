@@ -128,6 +128,12 @@ Public and protected routes are declared explicitly in each router — no global
 
 All environment variables are declared and validated at startup in `src/config.js`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing. Feature code imports named constants from `config.js` — never reads `process.env` directly.
 
+## Pagination
+
+List endpoints use cursor-based pagination over `_id`. MongoDB ObjectIds are monotonically increasing and carry a primary index, so `{ _id: { $gt: cursor } }` is always an O(log n) index range scan — unlike `skip`, which degrades linearly with collection size. It also prevents phantom reads when documents are inserted between pages.
+
+The trade-off is that arbitrary page jumps and result totals are not supported. For admin panels or reporting use cases, swap the DAO to `skip` + `countDocuments`.
+
 ## Testing approach
 
 - Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.js`
