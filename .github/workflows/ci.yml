@@ -1,4 +1,4 @@
-name: Build and Deploy Main
+name: Build Main
 
 on:
     push:
@@ -19,7 +19,7 @@ env:
 
 jobs:
     build-and-deploy:
-        name: Build, validate, and deploy
+        name: Build, validate, and test
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
@@ -51,10 +51,3 @@ jobs:
                   docker buildx build \
                     -t ${{ env.IMAGE_NAME }}:${{ steps.commit.outputs.sha }} \
                     --load .
-
-            - name: Simulate deploy
-              if: github.event_name != 'pull_request'
-              run: |
-                  echo "Docker image built: ${{ env.IMAGE_NAME }}:${{ steps.commit.outputs.sha }}"
-                  echo "Deploy would run here after a merge/push to main."
-                  echo "Replace this step with cloud/VPS deploy commands that use the pushed image."

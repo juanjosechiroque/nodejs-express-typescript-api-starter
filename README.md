@@ -8,7 +8,7 @@ A production-minded **Node.js REST API starter** built with **Express 5**, **Mon
 - 🚀 **Express 5** — HTTP API and middleware
 - 🔐 **JWT** — token-based auth
 - 📋 **Joi** — request validation
-- 🧪 **Jest** — end-to-end API tests next to each feature (for now)
+- 🧪 **Jest** — end-to-end API tests next to each feature
 - 📝 **ESLint & Prettier** — enforced style and static checks
 - 🪝 **Husky** — `npm run validate` on pre-commit
 - 🔒 **Security** — Helmet, CORS, rate limiting
@@ -103,23 +103,39 @@ The **`auth`** feature is a minimal **register + login** flow: both endpoints re
 - `PUT /v1/products/:id` — update; **JWT required**
 - `DELETE /v1/products/:id` — delete; **JWT required**
 
-## Project Structure
+## Docker
 
-```text
-src/
-├── app.js
-├── router.js
-├── config.js
-├── database.js
-├── middleware/
-├── utils/
-├── api/
-│   ├── auth/
-│   ├── health/
-│   ├── product/
-│   └── user/
-└── tests/
+```bash
+docker build -t nodejs-express-api-boilerplate .
+docker run -p 3000:3000 --env-file .env nodejs-express-api-boilerplate
 ```
+
+The image uses a multi-stage build and runs as a non-root user in production.
+
+## Response shape
+
+**Success**
+
+```json
+{
+    "status": 200,
+    "message": "success",
+    "data": {}
+}
+```
+
+**Error**
+
+```json
+{
+    "status": 400,
+    "code": "BadRequestError",
+    "message": "Validation failed",
+    "details": [{ "field": "price", "error": "\"price\" must be a positive number" }]
+}
+```
+
+Stack traces are included in non-production environments only and never exposed in production.
 
 ## Development
 
@@ -129,9 +145,19 @@ Features live under `src/api/<feature>/` and are wired in `src/router.js`.
 
 Use `src/api/product/` as the reference module for CRUD routes, Joi validation, auth middleware, service/DAO/model separation, and feature-level tests.
 
-Detailed development rules are documented in `.cursor/rules/api-architecture.mdc`.
+Architecture decisions, layer responsibilities, and coding conventions are documented in [ARCHITECTURE.md](./ARCHITECTURE.md), including the full project structure and layer flow.
 
-Husky runs `npm run validate` on each commit. Override once with `git commit --no-verify` if you must.
+### AI-assisted development
+
+This project includes configuration files for AI coding assistants:
+
+| Tool         | File                                 |
+| ------------ | ------------------------------------ |
+| Claude Code  | [`CLAUDE.md`](./CLAUDE.md)           |
+| OpenAI Codex | [`AGENTS.md`](./AGENTS.md)           |
+| Cursor       | [`.cursor/rules/`](./.cursor/rules/) |
+
+Each file points to `ARCHITECTURE.md` as the source of truth so any AI assistant follows the same conventions when generating or modifying code.
 
 ## Testing
 
@@ -139,6 +165,8 @@ Husky runs `npm run validate` on each commit. Override once with `git commit --n
 npm test
 npm run test:coverage
 ```
+
+Husky runs `npm run validate` automatically on each commit to keep lint and formatting clean.
 
 ## License
 

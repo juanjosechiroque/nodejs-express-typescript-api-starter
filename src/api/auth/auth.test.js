@@ -37,6 +37,19 @@ describe(`POST ${V1}/auth/signup`, () => {
         expect(response.body.message).toBe("Email address is already registered");
     });
 
+    test("should return 400 on duplicate key race condition (err.code 11000)", async () => {
+        const data = { email: "test@example.com", password: "test1234" };
+        mockMongoose.model("User").findOne.mockResolvedValueOnce(null);
+        const duplicateKeyError = new Error("Duplicate key");
+        duplicateKeyError.code = 11000;
+        mockMongoose.model("User").prototype.save.mockRejectedValueOnce(duplicateKeyError);
+
+        const response = await api.post(`${V1}/auth/signup`).send(data);
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Email address is already registered");
+    });
+
     test("should return an error when input is invalid", async () => {
         const response = await api.post(`${V1}/auth/signup`);
         expect(response.status).toBe(400);
