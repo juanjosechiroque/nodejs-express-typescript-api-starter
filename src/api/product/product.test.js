@@ -73,7 +73,9 @@ describe(`GET ${V1}/products/:id`, () => {
             name: "Mocked Product 1",
             price: 100,
         };
-        mockMongoose.model("Product").findById.mockResolvedValueOnce(productMock);
+        mockMongoose
+            .model("Product")
+            .findById.mockReturnValueOnce({ lean: jest.fn().mockResolvedValue(productMock) });
 
         const response = await api.get(`${V1}/products/${validMongoId}`);
 
@@ -83,7 +85,9 @@ describe(`GET ${V1}/products/:id`, () => {
     });
 
     test("should return 404 when product not found", async () => {
-        mockMongoose.model("Product").findById.mockResolvedValueOnce(null);
+        mockMongoose
+            .model("Product")
+            .findById.mockReturnValueOnce({ lean: jest.fn().mockResolvedValue(null) });
 
         const response = await api.get(`${V1}/products/${validMongoId}`);
 

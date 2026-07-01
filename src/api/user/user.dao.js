@@ -6,6 +6,6 @@ export async function createUserDao({ email, password }) {
     return user;
 }
 
-export async function existsEmailUserDao({ email }) {
+export async function findUserByEmailDao({ email }) {
     return await User.findOne({ email });
 }

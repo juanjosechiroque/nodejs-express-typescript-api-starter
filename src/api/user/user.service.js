@@ -1,13 +1,13 @@
 import bcrypt from "bcrypt";
 import { BadRequestError, UnauthorizedError } from "../../errors.js";
 import { generateToken } from "../../utils/jwt.js";
-import { createUserDao, existsEmailUserDao } from "./user.dao.js";
+import { createUserDao, findUserByEmailDao } from "./user.dao.js";
 
 const EMAIL_ALREADY_REGISTERED_MESSAGE = "Email address is already registered";
 
 export async function registerUser({ email, password }) {
     const normalizedEmail = email.trim().toLowerCase();
-    const existingUser = await existsEmailUserDao({ email: normalizedEmail });
+    const existingUser = await findUserByEmailDao({ email: normalizedEmail });
 
     if (existingUser) {
         throw BadRequestError(EMAIL_ALREADY_REGISTERED_MESSAGE);
@@ -32,7 +32,7 @@ export async function registerUser({ email, password }) {
 
 export async function loginUser({ email, password }) {
     const normalizedEmail = email.trim().toLowerCase();
-    const user = await existsEmailUserDao({ email: normalizedEmail });
+    const user = await findUserByEmailDao({ email: normalizedEmail });
 
     if (!user || !user.password) {
         throw UnauthorizedError("Invalid email or password");

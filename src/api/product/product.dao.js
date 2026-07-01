@@ -14,7 +14,7 @@ export async function getProductsDao({ skip = 0, limit = 10 } = {}) {
 }
 
 export async function getProductByIdDao(id) {
-    return await Product.findById(id);
+    return await Product.findById(id).lean();
 }
 
 export async function updateProductDao(id, update) {
