@@ -1,5 +1,6 @@
 import { verifyToken } from "../utils/jwt.js";
 import { UnauthorizedError } from "../errors.js";
+import logger from "../utils/logger.js";
 
 const bearerTokenRegex = /^Bearer\s+(\S+)$/i;
 
@@ -18,6 +19,7 @@ export const authenticate = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
+        logger.warn({ err: error, ip: req.ip, code: error.code }, "Auth token rejected");
         return next(error);
     }
 };

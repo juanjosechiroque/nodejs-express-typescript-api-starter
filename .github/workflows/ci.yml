@@ -38,8 +38,8 @@ jobs:
             - name: Lint and format check
               run: npm run validate
 
-            - name: Run tests
-              run: npm test
+            - name: Run tests with coverage
+              run: npm run test:coverage -- --coverageThreshold='{"global":{"statements":70,"lines":70,"branches":70}}'
 
             - name: Resolve image tag
               id: commit

@@ -76,6 +76,7 @@ Copy `.env.example` to `.env`. In non-production, variables are loaded with `dot
 | `CORS_ALLOWED_ORIGINS`      | No       | Comma-separated allowed origins. CORS is only enabled when this is set. Use `*` to allow all origins.                  |
 | `RATE_LIMIT_WINDOW_MINUTES` | No       | Length of the sliding window in **minutes**. Rate limiting is only enabled when this and `RATE_LIMIT_MAX` are set.     |
 | `RATE_LIMIT_MAX`            | No       | Max **HTTP requests per IP** allowed inside that window. Must be configured together with `RATE_LIMIT_WINDOW_MINUTES`. |
+| `LOG_LEVEL`                 | No       | Pino log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` (default `info`).                                   |
 
 ## API Endpoints
 

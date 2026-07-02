@@ -12,10 +12,12 @@ const authRateLimit = rateLimit({
     limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    message: {
-        status: 429,
-        code: "TooManyRequests",
-        message: "Too many attempts, please try again later",
+    handler: (req, res) => {
+        res.status(429).json({
+            status: 429,
+            code: "TooManyRequests",
+            message: "Too many attempts, please try again later",
+        });
     },
 });
 
