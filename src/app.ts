@@ -7,7 +7,12 @@ import cors from "cors";
 import { errorGenericHandler } from "./middleware/errorMiddleware.js";
 import { notFound } from "./middleware/notFoundMiddleware.js";
 import helmet from "helmet";
-import { CORS_ALLOWED_ORIGINS, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MINUTES } from "./config.js";
+import {
+    CORS_ALLOWED_ORIGINS,
+    NODE_ENV,
+    RATE_LIMIT_MAX,
+    RATE_LIMIT_WINDOW_MINUTES,
+} from "./config.js";
 import logger from "./utils/logger.js";
 import type { Request, Response } from "express";
 
@@ -15,7 +20,7 @@ const app = express();
 
 app.use(helmet());
 
-if (process.env.NODE_ENV !== "test") {
+if (NODE_ENV !== "test") {
     app.use(
         pinoHttp({
             logger,
@@ -40,11 +45,11 @@ if (CORS_ALLOWED_ORIGINS) {
     );
 }
 
-if (process.env.NODE_ENV !== "test" && RATE_LIMIT_WINDOW_MINUTES && RATE_LIMIT_MAX) {
+if (NODE_ENV !== "test" && RATE_LIMIT_WINDOW_MINUTES && RATE_LIMIT_MAX) {
     app.use(
         rateLimit({
-            windowMs: Number(RATE_LIMIT_WINDOW_MINUTES) * 60 * 1000,
-            limit: Number(RATE_LIMIT_MAX),
+            windowMs: RATE_LIMIT_WINDOW_MINUTES * 60 * 1000,
+            limit: RATE_LIMIT_MAX,
             standardHeaders: true,
             legacyHeaders: false,
         })

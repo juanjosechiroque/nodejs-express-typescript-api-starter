@@ -11,7 +11,7 @@ This document describes the structure, conventions, and design decisions behind 
 | Framework        | Express 5                            |
 | Database         | MongoDB via Mongoose 8               |
 | Auth             | JWT (jsonwebtoken)                   |
-| Validation       | Joi                                  |
+| Validation       | Joi (requests) + Zod (environment)   |
 | Testing          | Jest + Supertest                     |
 | Containerization | Docker (multi-stage, non-root)       |
 | CI/CD            | GitHub Actions                       |
@@ -130,7 +130,7 @@ Auth endpoints (`/signup`, `/login`) apply a fixed rate limit (10 requests per 1
 
 ## Environment configuration
 
-All environment variables are declared and validated at startup in `src/config.ts`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing. Feature code imports named constants from `config.ts` — never reads `process.env` directly.
+All environment variables are declared and validated at startup with Zod in `src/config.ts`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing or invalid. Feature code imports named constants from `config.ts` — never reads `process.env` directly.
 
 ## Logging
 

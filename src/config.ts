@@ -1,22 +1,48 @@
+import { z } from "zod";
+
 if (process.env.NODE_ENV !== "production") {
     const dotenv = await import("dotenv");
     dotenv.config();
 }
 
-const env = process.env;
+const envSchema = z
+    .object({
+        NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+        PORT: z.coerce.number().int().positive().default(3000),
+        MONGODB_URI: z.string().trim().min(1, "MONGODB_URI is required"),
+        JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
+        JWT_EXPIRATION_TIME: z.string().trim().min(1).default("1h"),
+        CORS_ALLOWED_ORIGINS: z.string().trim().optional(),
+        RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().positive().optional(),
+        RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
+        LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
+    })
+    .refine(
+        (env) =>
+            (env.RATE_LIMIT_WINDOW_MINUTES == null && env.RATE_LIMIT_MAX == null) ||
+            (env.RATE_LIMIT_WINDOW_MINUTES != null && env.RATE_LIMIT_MAX != null),
+        {
+            message: "RATE_LIMIT_WINDOW_MINUTES and RATE_LIMIT_MAX must be configured together",
+            path: ["RATE_LIMIT_WINDOW_MINUTES"],
+        }
+    );
 
-const REQUIRED_ENV_VARS = ["MONGODB_URI", "JWT_SECRET"];
+const parsedEnv = envSchema.safeParse(process.env);
 
-const missing = REQUIRED_ENV_VARS.filter((key) => !String(env[key] ?? "").trim());
-if (missing.length > 0) {
-    console.error(`Missing required environment variables: ${missing.join(", ")}`);
+if (!parsedEnv.success) {
+    console.error("Invalid environment configuration");
+    console.error(z.prettifyError(parsedEnv.error));
     process.exit(1);
 }
 
-export const PORT = Number(env.PORT) || 3000;
-export const MONGODB_URI = env.MONGODB_URI as string;
-export const JWT_SECRET = env.JWT_SECRET as string;
-export const JWT_EXPIRATION_TIME = env.JWT_EXPIRATION_TIME || "1h";
-export const CORS_ALLOWED_ORIGINS = env.CORS_ALLOWED_ORIGINS;
-export const RATE_LIMIT_WINDOW_MINUTES = env.RATE_LIMIT_WINDOW_MINUTES;
-export const RATE_LIMIT_MAX = env.RATE_LIMIT_MAX;
+export const {
+    NODE_ENV,
+    PORT,
+    MONGODB_URI,
+    JWT_SECRET,
+    JWT_EXPIRATION_TIME,
+    CORS_ALLOWED_ORIGINS,
+    RATE_LIMIT_WINDOW_MINUTES,
+    RATE_LIMIT_MAX,
+    LOG_LEVEL,
+} = parsedEnv.data;

@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from "express";
 import type { AppError } from "../errors.js";
+import { NODE_ENV } from "../config.js";
 
 type ResolvedError = {
     statusCode: number;
@@ -58,7 +59,7 @@ function resolveError(err: unknown): ResolvedError {
         };
     }
 
-    const isProduction = process.env.NODE_ENV === "production";
+    const isProduction = NODE_ENV === "production";
     return {
         statusCode: 500,
         code: "INTERNAL_SERVER_ERROR",
@@ -74,7 +75,7 @@ export const errorGenericHandler: ErrorRequestHandler = (err, _req, res, next) =
     void next;
     const resolved = resolveError(err);
 
-    if (resolved.statusCode >= 500 && process.env.NODE_ENV === "production") {
+    if (resolved.statusCode >= 500 && NODE_ENV === "production") {
         resolved.message = "Internal server error";
         resolved.code = "INTERNAL_SERVER_ERROR";
     }
@@ -95,7 +96,7 @@ export const errorGenericHandler: ErrorRequestHandler = (err, _req, res, next) =
         result.details = resolved.details;
     }
 
-    if (process.env.NODE_ENV !== "production") {
+    if (NODE_ENV !== "production") {
         result.stack = resolved.stack;
     }
 

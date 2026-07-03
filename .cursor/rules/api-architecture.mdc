@@ -9,7 +9,7 @@ Full reference: `ARCHITECTURE.md` at the project root. These rules are the actio
 
 ## Stack
 
-Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Joi · Jest + Supertest · Docker · GitHub Actions
+Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Joi · Zod · Jest + Supertest · Docker · GitHub Actions
 
 ## Layer flow — never skip or reverse
 
@@ -64,7 +64,7 @@ router.get("/", validateQuery(querySchema), asyncHandler(handler));  // query �
 
 ## Environment variables
 
-Declare and export from `src/config.ts`. Never read `process.env` directly in feature code.
+Declare and validate with Zod in `src/config.ts`. Never read `process.env` directly in feature code.
 
 ## DO NOT
 

@@ -16,6 +16,7 @@ describe("errorGenericHandler", () => {
 
     afterEach(() => {
         process.env.NODE_ENV = originalEnv;
+        jest.resetModules();
     });
 
     test("returns 500 when error is null", () => {
@@ -102,8 +103,9 @@ describe("errorGenericHandler", () => {
         expect(body).not.toHaveProperty("details");
     });
 
-    test("includes stack in non-production", () => {
+    test("includes stack in non-production", async () => {
         process.env.NODE_ENV = "development";
+        const { errorGenericHandler } = await import("./errorMiddleware.js");
         const res = makeRes();
         const err = new Error("Unexpected");
         errorGenericHandler(err, req, res, next);
@@ -111,8 +113,9 @@ describe("errorGenericHandler", () => {
         expect(body).toHaveProperty("stack");
     });
 
-    test("hides message and stack in production for 5xx errors", () => {
+    test("hides message and stack in production for 5xx errors", async () => {
         process.env.NODE_ENV = "production";
+        const { errorGenericHandler } = await import("./errorMiddleware.js");
         const res = makeRes();
         const err = new Error("Secret internal detail");
         errorGenericHandler(err, req, res, next);
