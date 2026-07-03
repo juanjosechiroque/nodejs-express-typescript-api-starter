@@ -19,7 +19,9 @@ const createMockModel = () => {
     Model.findOne = vi.fn().mockResolvedValue(null);
     const defaultFindByIdChain = { lean: vi.fn().mockResolvedValue(null) };
     Model.findById = vi.fn(() => defaultFindByIdChain);
-    Model.findByIdAndUpdate = vi.fn().mockResolvedValue(null);
+    const defaultFindByIdAndUpdateChain = { lean: vi.fn().mockResolvedValue(null) };
+    Model.findByIdAndUpdate = vi.fn(() => defaultFindByIdAndUpdateChain);
+    Model.findOneAndDelete = vi.fn().mockResolvedValue(null);
     Model.findByIdAndDelete = vi.fn().mockResolvedValue(null);
     Model.create = vi.fn().mockResolvedValue({});
     Model.prototype.save = vi.fn().mockResolvedValue({});

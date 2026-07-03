@@ -35,10 +35,13 @@ export async function findProductById(id: string) {
 }
 
 export async function updateProductById(id: string, update: UpdateProductInput) {
-    return await Product.findByIdAndUpdate(id, update, { new: true });
+    return await Product.findByIdAndUpdate(id, update, { new: true }).lean();
 }
 
-export async function deleteProductById(productId: string) {
-    const product = await Product.findByIdAndDelete(productId);
-    return product;
+export async function deleteProductIfNotActive(productId: string) {
+    const deleted = await Product.findOneAndDelete({
+        _id: productId,
+        status: { $ne: "active" },
+    });
+    return deleted;
 }

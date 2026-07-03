@@ -33,7 +33,7 @@ export function validateQuery(schema: ZodType): RequestHandler {
     return (req: Request, _res: Response, next: NextFunction) => {
         const result = schema.safeParse(req.query ?? {});
         if (!result.success) return next(buildValidationError(result.error));
-        req.validatedQuery = result.data as Record<string, unknown>;
+        req.validatedQuery = result.data;
         next();
     };
 }

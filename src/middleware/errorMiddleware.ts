@@ -71,8 +71,7 @@ function resolveError(err: unknown): ResolvedError {
     };
 }
 
-export const errorGenericHandler: ErrorRequestHandler = (err, _req, res, next) => {
-    void next;
+export const errorGenericHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     const resolved = resolveError(err);
 
     if (resolved.statusCode >= 500 && NODE_ENV === "production") {

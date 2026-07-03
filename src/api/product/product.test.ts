@@ -4,8 +4,8 @@ import mockMongoose from "../../tests/mongoose-mock.js";
 const { api, V1 } = await import("../../tests/helpers.js");
 
 describe(`GET ${V1}/products`, () => {
-    function makeFindChain(items) {
-        const chain = {};
+    function makeFindChain(items: Record<string, unknown>[]) {
+        const chain: Record<string, unknown> = {};
         chain.limit = vi.fn().mockReturnValue(chain);
         chain.sort = vi.fn().mockReturnValue(chain);
         chain.lean = vi.fn().mockResolvedValue(items);
@@ -226,7 +226,9 @@ describe(`POST ${V1}/products`, () => {
 describe(`PUT ${V1}/products/:id`, () => {
     test("should return the updated product", async () => {
         const data = { name: "updated", price: 20, stock: 12, status: "archived" };
-        mockMongoose.model("Product").findByIdAndUpdate.mockResolvedValueOnce(data);
+        mockMongoose
+            .model("Product")
+            .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(data) });
 
         const response = await api
             .put(`${V1}/products/${validMongoId}`)
@@ -262,7 +264,9 @@ describe(`PUT ${V1}/products/:id`, () => {
     });
 
     test("should return an error when product not found", async () => {
-        mockMongoose.model("Product").findByIdAndUpdate.mockResolvedValueOnce(null);
+        mockMongoose
+            .model("Product")
+            .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(null) });
 
         const response = await api
             .put(`${V1}/products/${validMongoId}`)
@@ -286,7 +290,7 @@ describe(`DELETE ${V1}/products/:id`, () => {
         mockMongoose
             .model("Product")
             .findById.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(productMock) });
-        mockMongoose.model("Product").findByIdAndDelete.mockResolvedValueOnce(productMock);
+        mockMongoose.model("Product").findOneAndDelete.mockResolvedValueOnce(productMock);
 
         const response = await api
             .delete(`${V1}/products/${validMongoId}`)

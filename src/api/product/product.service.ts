@@ -38,10 +38,14 @@ export async function updateProduct({ id, ...fields }: UpdateProductInput & { id
 }
 
 export async function deleteProduct(productId: string) {
-    const product = await productRepository.findProductById(productId);
-    if (!product) throw NotFoundError("Product not found");
-    if (product.status === "active") {
+    const exists = await productRepository.findProductById(productId);
+    if (!exists) throw NotFoundError("Product not found");
+    if (exists.status === "active") {
         throw BadRequestError("Active products must be archived before deletion");
     }
-    return await productRepository.deleteProductById(productId);
+    const result = await productRepository.deleteProductIfNotActive(productId);
+    if (!result) {
+        throw BadRequestError("Active products must be archived before deletion");
+    }
+    return result;
 }

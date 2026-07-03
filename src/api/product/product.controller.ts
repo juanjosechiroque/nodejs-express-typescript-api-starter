@@ -8,11 +8,20 @@ import {
 } from "./product.service.js";
 
 import { sendResponse } from "../../utils/response.js";
-import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
+import type {
+    CreateProductInput,
+    ListProductsInput,
+    ProductIdParams,
+    UpdateProductInput,
+} from "./product.types.js";
 
-export async function getProductsHandler(req: Request, res: Response) {
-    const query = req.validatedQuery as ListProductsInput;
-    const result = await getProducts(query);
+type RequestWithValidatedQuery<T> = Request & { validatedQuery: T };
+
+export async function getProductsHandler(
+    req: RequestWithValidatedQuery<ListProductsInput>,
+    res: Response
+) {
+    const result = await getProducts(req.validatedQuery);
     sendResponse(
         res,
         200,
@@ -21,27 +30,30 @@ export async function getProductsHandler(req: Request, res: Response) {
     );
 }
 
-export async function getProductByIdHandler(req: Request, res: Response) {
-    const { id } = req.params as { id: string };
+export async function getProductByIdHandler(req: Request<ProductIdParams>, res: Response) {
+    const { id } = req.params;
     const result = await getProductById(id);
     sendResponse(res, 200, result, "Product retrieved");
 }
 
-export async function createProductHandler(req: Request, res: Response) {
-    const input = req.body as CreateProductInput;
-    const result = await createProduct(input);
+export async function createProductHandler(
+    req: Request<unknown, unknown, CreateProductInput>,
+    res: Response
+) {
+    const result = await createProduct(req.body);
     sendResponse(res, 201, result, "Product created");
 }
 
-export async function updateProductHandler(req: Request, res: Response) {
-    const { id } = req.params as { id: string };
-    const fields = req.body as UpdateProductInput;
-    const result = await updateProduct({ id, ...fields });
+export async function updateProductHandler(
+    req: Request<ProductIdParams, unknown, UpdateProductInput>,
+    res: Response
+) {
+    const { id } = req.params;
+    const result = await updateProduct({ id, ...req.body });
     sendResponse(res, 200, result, "Product updated");
 }
 
-export async function deleteProductHandler(req: Request, res: Response) {
-    const productId = (req.params as { id: string }).id;
-    const result = await deleteProduct(productId);
+export async function deleteProductHandler(req: Request<ProductIdParams>, res: Response) {
+    const result = await deleteProduct(req.params.id);
     sendResponse(res, 200, result, "Product deleted");
 }
