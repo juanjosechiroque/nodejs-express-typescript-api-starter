@@ -1,5 +1,5 @@
 {
-    "name": "nodejs-express-api-boilerplate",
+    "name": "nodejs-express-typescript-api-starter",
     "version": "1.0.0",
     "description": "TypeScript REST API starter with Express 5, MongoDB, JWT, Docker, CI/CD, and tests",
     "main": "dist/index.js",

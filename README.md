@@ -1,4 +1,4 @@
-# Express Mongo API Starter
+# Node.js Express TypeScript API Starter
 
 A production-minded **TypeScript REST API starter** built with **Express 5**, **MongoDB**, JWT auth, validation, tests, and practical defaults for service-oriented backends.
 
@@ -27,7 +27,7 @@ A production-minded **TypeScript REST API starter** built with **Express 5**, **
 
     ```bash
     git clone <your-repo-url>
-    cd nodejs-express-api-boilerplate
+    cd nodejs-express-typescript-api-starter
     ```
 
 2. **Install dependencies**
@@ -114,8 +114,8 @@ Active products must be archived before deletion. This keeps the example domain 
 ## Docker
 
 ```bash
-docker build -t nodejs-express-api-boilerplate .
-docker run -p 3000:3000 --env-file .env nodejs-express-api-boilerplate
+docker build -t nodejs-express-typescript-api-starter .
+docker run -p 3000:3000 --env-file .env nodejs-express-typescript-api-starter
 ```
 
 The image uses a multi-stage build and runs as a non-root user in production.
