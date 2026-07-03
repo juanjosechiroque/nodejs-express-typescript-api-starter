@@ -14,7 +14,7 @@ import {
     RATE_LIMIT_WINDOW_MINUTES,
 } from "./config.js";
 import logger from "./utils/logger.js";
-import type { Request, Response } from "express";
+import type { Request } from "express";
 
 const app = express();
 
@@ -28,8 +28,12 @@ if (NODE_ENV !== "test") {
             customSuccessMessage: () => "request completed",
             customErrorMessage: () => "request failed",
             serializers: {
-                req: (req: Request) => ({ id: req.id, method: req.method, url: req.url }),
-                res: (res: Response) => ({ statusCode: res.statusCode }),
+                req: (req: Record<string, unknown>) => ({
+                    id: req["id"],
+                    method: req["method"],
+                    url: req["url"],
+                }),
+                res: (res: Record<string, unknown>) => ({ statusCode: res["statusCode"] }),
             },
         })
     );

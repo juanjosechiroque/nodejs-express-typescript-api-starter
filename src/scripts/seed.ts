@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import { connectDB, disconnectDB } from "../database.js";
 import Product from "../api/product/product.model.js";
 import User from "../api/user/user.model.js";
@@ -53,12 +52,9 @@ const demoProducts = [
 async function seed() {
     await connectDB();
 
-    const hashedPassword = await bcrypt.hash(DEMO_USER_PASSWORD, 10);
-    await User.updateOne(
-        { email: DEMO_USER_EMAIL },
-        { $set: { email: DEMO_USER_EMAIL, password: hashedPassword } },
-        { upsert: true }
-    );
+    await User.deleteOne({ email: DEMO_USER_EMAIL });
+    const demoUser = new User({ email: DEMO_USER_EMAIL, password: DEMO_USER_PASSWORD });
+    await demoUser.save();
 
     await Promise.all(
         demoProducts.map((product) =>

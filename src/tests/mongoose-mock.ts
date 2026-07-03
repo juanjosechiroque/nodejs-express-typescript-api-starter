@@ -40,6 +40,13 @@ export const mockMongoose = {
     }),
     model: vi.fn((modelName: string) => models[modelName] || createMockModel()),
     connection: { readyState: 1 },
+    ConnectionStates: {
+        disconnected: 0,
+        connected: 1,
+        connecting: 2,
+        disconnecting: 3,
+        uninitialized: 99,
+    },
     Types: {
         ObjectId: vi.fn(function MockObjectId(id: string) {
             return id;
