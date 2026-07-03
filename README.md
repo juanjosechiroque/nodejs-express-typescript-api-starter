@@ -8,7 +8,7 @@ A production-minded **TypeScript REST API starter** built with **Express 5**, **
 - **Express 5** — HTTP API and middleware
 - **JWT** — token-based auth
 - **Zod** — type-safe request and environment validation
-- **Jest** — end-to-end API tests next to each feature
+- **Vitest** — unit and API tests next to each feature
 - **ESLint & Prettier** — enforced style and static checks
 - **Husky** — `npm run validate` on pre-commit
 - **Security** — Helmet, CORS, rate limiting, per-route auth limits
@@ -60,8 +60,8 @@ A production-minded **TypeScript REST API starter** built with **Express 5**, **
 | `npm run build`         | Compile TypeScript      |
 | `npm run validate`      | ESLint + Prettier check |
 | `npm run format`        | Format + ESLint --fix   |
-| `npm test`              | Jest                    |
-| `npm run test:coverage` | Jest + coverage         |
+| `npm test`              | Vitest                  |
+| `npm run test:coverage` | Vitest + coverage       |
 | `npm run typecheck`     | TypeScript typecheck    |
 
 ## Environment variables
@@ -99,7 +99,9 @@ The **`auth`** feature is a minimal **register + login** flow: both endpoints re
 - `POST /v1/auth/signup` — register (returns JWT)
 - `POST /v1/auth/login` — login (returns JWT)
 
-### Products (example CRUD)
+### Products (reference module)
+
+The product feature is intentionally small: it exists as a reference module for validation, auth-protected writes, service/DAO/model separation, cursor pagination, and feature-level tests.
 
 - `GET /v1/products` — list (`cursor`, `limit` query params); public
 - `GET /v1/products/:id` — get by id; public
@@ -135,7 +137,7 @@ The image uses a multi-stage build and runs as a non-root user in production.
     "status": 400,
     "code": "BadRequestError",
     "message": "Validation failed",
-    "details": [{ "field": "price", "error": "\"price\" must be a positive number" }]
+    "details": [{ "field": "price", "error": "Too small: expected number to be >0" }]
 }
 ```
 
@@ -147,7 +149,7 @@ Stack traces are included in non-production environments only and never exposed 
 
 Features live under `src/api/<feature>/` and are wired in `src/router.ts`.
 
-Use `src/api/product/` as the reference module for CRUD routes, Zod validation, auth middleware, service/DAO/model separation, and feature-level tests.
+Use `src/api/product/` as the intentionally small reference module for CRUD routes, Zod validation, auth middleware, service/DAO/model separation, cursor pagination, and feature-level tests.
 
 Architecture decisions, layer responsibilities, and coding conventions are documented in [ARCHITECTURE.md](./ARCHITECTURE.md), including the full project structure and layer flow.
 

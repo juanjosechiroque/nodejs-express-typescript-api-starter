@@ -19,7 +19,6 @@ export default defineConfig([
             sourceType: "module",
             globals: {
                 ...globals.node,
-                ...globals.jest,
             },
         },
         rules: {
@@ -47,7 +46,6 @@ export default defineConfig([
             },
             globals: {
                 ...globals.node,
-                ...globals.jest,
             },
         },
         rules: {

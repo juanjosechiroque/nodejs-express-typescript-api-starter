@@ -14,7 +14,7 @@
         "noUncheckedIndexedAccess": true,
         "exactOptionalPropertyTypes": true,
         "isolatedModules": true,
-        "types": ["node", "jest"]
+        "types": ["node"]
     },
     "include": ["index.ts", "src/**/*.ts"],
     "exclude": ["node_modules", "dist", "coverage", "src/**/*.test.ts", "src/tests/**/*.ts"]

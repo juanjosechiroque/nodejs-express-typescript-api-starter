@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
-import mockMongoose from "../../tests/jest-mongoose-mock.js";
+import { describe, expect, test } from "vitest";
+import mockMongoose from "../../tests/mongoose-mock.js";
 
 const { api, V1 } = await import("../../tests/helpers.js");
 

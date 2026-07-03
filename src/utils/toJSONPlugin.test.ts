@@ -1,3 +1,4 @@
+import { describe, expect, test } from "vitest";
 import { toJSONPlugin } from "./toJSONPlugin.js";
 
 describe("toJSONPlugin", () => {

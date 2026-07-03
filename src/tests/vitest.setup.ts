@@ -1,20 +1,20 @@
-import { jest } from "@jest/globals";
-import mockMongoose from "./jest-mongoose-mock.js";
+import { vi } from "vitest";
+import mockMongoose from "./mongoose-mock.js";
 import { UnauthorizedError } from "../errors.js";
 
-process.env.MONGODB_URI ??= "mongodb://127.0.0.1:27017/jest";
+process.env.MONGODB_URI ??= "mongodb://127.0.0.1:27017/vitest";
 process.env.JWT_SECRET ??= "test-jwt-secret-thirty-two-chars-min";
 
-jest.mock("mongoose", () => ({
-    __esModule: true,
+vi.mock("mongoose", () => ({
+    default: mockMongoose,
     ...mockMongoose,
 }));
 
 const mockUserId = "507f1f77bcf86cd799439011";
 
-jest.unstable_mockModule("../utils/jwt.js", () => ({
-    generateToken: jest.fn(() => "valid-token"),
-    verifyToken: jest.fn((token) => {
+vi.mock("../utils/jwt.js", () => ({
+    generateToken: vi.fn(() => "valid-token"),
+    verifyToken: vi.fn((token) => {
         if (token === "valid-token") {
             return { sub: mockUserId, email: "test@example.com" };
         }

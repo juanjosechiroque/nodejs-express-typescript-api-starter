@@ -12,7 +12,7 @@ This document describes the structure, conventions, and design decisions behind 
 | Database         | MongoDB via Mongoose 8               |
 | Auth             | JWT (jsonwebtoken)                   |
 | Validation       | Zod                                  |
-| Testing          | Jest + Supertest                     |
+| Testing          | Vitest + Supertest                   |
 | Containerization | Docker (multi-stage, non-root)       |
 | CI/CD            | GitHub Actions                       |
 | Code quality     | ESLint + Prettier + Husky pre-commit |
@@ -24,7 +24,7 @@ src/
 ├── api/                  # Feature modules (one folder per domain)
 │   ├── auth/
 │   ├── health/
-│   ├── product/          # Example CRUD feature
+│   ├── product/          # Small reference CRUD feature
 │   └── user/             # Support module (no HTTP routes yet)
 ├── middleware/           # Shared Express middleware
 ├── tests/                # Shared test helpers and mocks
@@ -49,7 +49,7 @@ Each domain feature is self-contained in `src/api/{feature}/`:
 {feature}.dao.ts          # Database access (Mongoose only, no HTTP)
 {feature}.model.ts        # Mongoose schema, indexes, serialization
 {feature}.types.ts        # Feature input/output types when useful
-{feature}.test.ts         # HTTP behavior tests (Jest + Supertest)
+{feature}.test.ts         # Unit or HTTP behavior tests (Vitest + Supertest)
 ```
 
 Support modules without HTTP endpoints omit `router` and `controller` until routes are needed.
@@ -84,6 +84,8 @@ router.get("/:id", validateParams(productIdParamSchema), asyncHandler(getProduct
 // validate query string — result available at req.validatedQuery
 router.get("/", validateQuery(listProductsQuerySchema), asyncHandler(getProductsHandler));
 ```
+
+The `product` feature is intentionally small. Treat it as the reference implementation for routing, validation, auth-protected writes, pagination, service/DAO/model separation, and tests. Add business-heavy modules in downstream apps rather than turning this starter into a full product.
 
 Validation errors return `400` with a `details` array identifying each failing field.
 
@@ -146,7 +148,7 @@ The trade-off is that arbitrary page jumps and result totals are not supported. 
 
 - Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`
 - HTTP behavior is tested end-to-end via Supertest against the real Express app
-- Mongoose is mocked at the model level (`src/tests/jest-mongoose-mock.ts`) to avoid requiring a live database in CI
+- Mongoose is mocked at the model level (`src/tests/mongoose-mock.ts`) to avoid requiring a live database in CI
 - Every feature covers: happy path, validation failures, auth failures, not-found cases, and DB error paths
 
 ## Docker

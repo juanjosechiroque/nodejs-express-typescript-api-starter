@@ -1,14 +1,14 @@
-import { jest } from "@jest/globals";
-import mockMongoose from "../../tests/jest-mongoose-mock.js";
+import { describe, expect, test, vi } from "vitest";
+import mockMongoose from "../../tests/mongoose-mock.js";
 
 const { api, V1 } = await import("../../tests/helpers.js");
 
 describe(`GET ${V1}/products`, () => {
     function makeFindChain(items) {
         const chain = {};
-        chain.limit = jest.fn().mockReturnValue(chain);
-        chain.sort = jest.fn().mockReturnValue(chain);
-        chain.lean = jest.fn().mockResolvedValue(items);
+        chain.limit = vi.fn().mockReturnValue(chain);
+        chain.sort = vi.fn().mockReturnValue(chain);
+        chain.lean = vi.fn().mockResolvedValue(items);
         return chain;
     }
 
@@ -64,9 +64,9 @@ describe(`GET ${V1}/products`, () => {
 
     test("should return 500 when getProducts throws", async () => {
         const chain = {};
-        chain.limit = jest.fn().mockReturnValue(chain);
-        chain.sort = jest.fn().mockReturnValue(chain);
-        chain.lean = jest.fn().mockRejectedValue(new Error("DB error"));
+        chain.limit = vi.fn().mockReturnValue(chain);
+        chain.sort = vi.fn().mockReturnValue(chain);
+        chain.lean = vi.fn().mockRejectedValue(new Error("DB error"));
         mockMongoose.model("Product").find.mockReturnValueOnce(chain);
 
         const response = await api.get(`${V1}/products`);
@@ -88,7 +88,7 @@ describe(`GET ${V1}/products/:id`, () => {
         };
         mockMongoose
             .model("Product")
-            .findById.mockReturnValueOnce({ lean: jest.fn().mockResolvedValue(productMock) });
+            .findById.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(productMock) });
 
         const response = await api.get(`${V1}/products/${validMongoId}`);
 
@@ -100,7 +100,7 @@ describe(`GET ${V1}/products/:id`, () => {
     test("should return 404 when product not found", async () => {
         mockMongoose
             .model("Product")
-            .findById.mockReturnValueOnce({ lean: jest.fn().mockResolvedValue(null) });
+            .findById.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(null) });
 
         const response = await api.get(`${V1}/products/${validMongoId}`);
 

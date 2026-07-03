@@ -1,22 +1,22 @@
-import { jest } from "@jest/globals";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { errorGenericHandler } from "./errorMiddleware.js";
 
 function makeRes() {
     const res = {};
-    res.status = jest.fn().mockReturnValue(res);
-    res.json = jest.fn().mockReturnValue(res);
+    res.status = vi.fn().mockReturnValue(res);
+    res.json = vi.fn().mockReturnValue(res);
     return res;
 }
 
 const req = {};
-const next = jest.fn();
+const next = vi.fn();
 
 describe("errorGenericHandler", () => {
     const originalEnv = process.env.NODE_ENV;
 
     afterEach(() => {
         process.env.NODE_ENV = originalEnv;
-        jest.resetModules();
+        vi.resetModules();
     });
 
     test("returns 500 when error is null", () => {

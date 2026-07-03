@@ -9,7 +9,7 @@ Full reference: `ARCHITECTURE.md` at the project root. These rules are the actio
 
 ## Stack
 
-Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Zod · Jest + Supertest · Docker · GitHub Actions
+Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Zod · Vitest + Supertest · Docker · GitHub Actions
 
 ## Layer flow — never skip or reverse
 
@@ -35,10 +35,12 @@ Create files under `src/api/{feature}/` following this pattern:
 {feature}.dao.ts          # Mongoose queries
 {feature}.model.ts        # Schema + model
 {feature}.types.ts        # Feature input/output types when useful
-{feature}.test.ts         # Jest + Supertest
+{feature}.test.ts         # Vitest unit or HTTP behavior tests
 ```
 
 Register the router in `src/router.ts`. Never create global `controllers/`, `services/`, or `models/` folders.
+
+Keep the starter intentionally small. The current `product` feature is a reference module for CRUD, auth-protected writes, Zod validation, pagination, layering, and tests — not a full product domain.
 
 ## Errors
 

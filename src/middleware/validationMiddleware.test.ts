@@ -1,13 +1,13 @@
-import { jest } from "@jest/globals";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { z } from "zod";
 import { validate, validateParams, validateQuery } from "./validationMiddleware.js";
 
-const next = jest.fn();
+const next = vi.fn();
 
 function makeRes() {
     const res = {};
-    res.status = jest.fn().mockReturnValue(res);
-    res.json = jest.fn().mockReturnValue(res);
+    res.status = vi.fn().mockReturnValue(res);
+    res.json = vi.fn().mockReturnValue(res);
     return res;
 }
 
