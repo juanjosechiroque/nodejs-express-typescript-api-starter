@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, type InferSchemaType } from "mongoose";
 
 const productSchema = new Schema(
     {
@@ -12,5 +12,9 @@ const productSchema = new Schema(
 );
 
 const Product = model("Product", productSchema, "products");
+
+export type ProductDocument = InferSchemaType<typeof productSchema> & {
+    _id: { toString: () => string };
+};
 
 export default Product;

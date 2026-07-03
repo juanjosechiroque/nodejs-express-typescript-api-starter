@@ -8,13 +8,15 @@ Architecture, patterns, and conventions are documented in [`ARCHITECTURE.md`](./
 npm run dev           # development server
 npm test              # Jest + Supertest
 npm run validate      # ESLint + Prettier check
+npm run typecheck     # TypeScript typecheck
+npm run build         # compile TypeScript to dist/
 npm run format        # auto-fix
 ```
 
 ## Before committing
 
 ```bash
-npm run validate && npm test
+npm run validate && npm run typecheck && npm run build && npm test
 ```
 
 Both must pass. Fix any failures before committing — do not skip hooks.

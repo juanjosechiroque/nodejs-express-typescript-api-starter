@@ -38,6 +38,9 @@ jobs:
             - name: Lint and format check
               run: npm run validate
 
+            - name: Typecheck
+              run: npm run typecheck
+
             - name: Run tests with coverage
               run: npm run test:coverage -- --coverageThreshold='{"global":{"statements":70,"lines":70,"branches":70}}'
 

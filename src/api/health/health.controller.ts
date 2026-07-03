@@ -1,7 +1,8 @@
+import type { Request, Response } from "express";
 import mongoose from "mongoose";
 
-export async function healthCheckHandler(req, res) {
-    const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+export function healthCheckHandler(_req: Request, res: Response) {
+    const dbStatus = Number(mongoose.connection.readyState) === 1 ? "connected" : "disconnected";
 
     if (dbStatus === "disconnected") {
         return res.status(503).json({

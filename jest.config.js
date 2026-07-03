@@ -3,8 +3,14 @@ export default {
     collectCoverage: true,
     silent: false,
     verbose: true,
-    transform: {},
-    setupFilesAfterEnv: ["<rootDir>/src/tests/jest.setup.js"],
+    extensionsToTreatAsEsm: [".ts"],
+    transform: {
+        "^.+\\.ts$": ["ts-jest", { useESM: true, diagnostics: false, tsconfig: "tsconfig.json" }],
+    },
+    setupFilesAfterEnv: ["<rootDir>/src/tests/jest.setup.ts"],
+    moduleNameMapper: {
+        "^(\\.{1,2}/.*)\\.js$": "$1",
+    },
     coverageThreshold: {
         global: {
             statements: 60,

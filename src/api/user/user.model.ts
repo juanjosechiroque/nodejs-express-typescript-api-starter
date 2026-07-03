@@ -21,8 +21,15 @@ userSchema.pre("save", async function (next) {
 
 userSchema.set("toJSON", {
     versionKey: false,
-    transform: function (doc, ret) {
-        ret.id = ret._id.toHexString();
+    transform: function (
+        _doc,
+        ret: {
+            _id?: { toHexString: () => string };
+            id?: string | undefined;
+            password?: string;
+        }
+    ) {
+        ret.id = ret._id?.toHexString();
         delete ret._id;
         delete ret.password;
     },

@@ -1,11 +1,11 @@
 ---
 description: Run npm run format after editing source files
-globs: ["src/**/*.js"]
+globs: ["src/**/*.ts", "index.ts"]
 ---
 
 # Format After Code Changes
 
-After creating or modifying JavaScript or TypeScript files (e.g. `.js`, `.ts`, `.mjs` — not `.json`, `.md`, `.env`, or config files), run the following once, after all changes are completed, from the project root:
+After creating or modifying TypeScript source files (e.g. `.ts` — not `.json`, `.md`, `.env`, or config files), run the following once, after all changes are completed, from the project root:
 
 ```bash
 npm run format

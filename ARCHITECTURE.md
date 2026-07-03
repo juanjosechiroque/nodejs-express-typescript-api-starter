@@ -7,6 +7,7 @@ This document describes the structure, conventions, and design decisions behind 
 | Layer            | Technology                           |
 | ---------------- | ------------------------------------ |
 | Runtime          | Node.js 24+ (ESM)                    |
+| Language         | TypeScript                           |
 | Framework        | Express 5                            |
 | Database         | MongoDB via Mongoose 8               |
 | Auth             | JWT (jsonwebtoken)                   |
@@ -28,12 +29,12 @@ src/
 ├── middleware/           # Shared Express middleware
 ├── tests/                # Shared test helpers and mocks
 └── utils/                # Shared utilities
-index.js                  # Server entrypoint
-src/app.js                # Express app setup
-src/router.js             # Versioned API router (mounted under /v1)
-src/config.js             # Environment variable validation and exports
-src/database.js           # MongoDB connection
-src/errors.js             # Typed error factories
+index.ts                  # Server entrypoint
+src/app.ts                # Express app setup
+src/router.ts             # Versioned API router (mounted under /v1)
+src/config.ts             # Environment variable validation and exports
+src/database.ts           # MongoDB connection
+src/errors.ts             # Typed error factories
 ```
 
 ## Feature module pattern
@@ -41,13 +42,14 @@ src/errors.js             # Typed error factories
 Each domain feature is self-contained in `src/api/{feature}/`:
 
 ```
-{feature}.router.js       # Routes + middleware wiring
-{feature}.controller.js   # HTTP layer: reads req, calls service, sends response
-{feature}.service.js      # Business logic and orchestration
-{feature}.validation.js   # Joi schemas for body, params, and query
-{feature}.dao.js          # Database access (Mongoose only, no HTTP)
-{feature}.model.js        # Mongoose schema, indexes, serialization
-{feature}.test.js         # HTTP behavior tests (Jest + Supertest)
+{feature}.router.ts       # Routes + middleware wiring
+{feature}.controller.ts   # HTTP layer: reads req, calls service, sends response
+{feature}.service.ts      # Business logic and orchestration
+{feature}.validation.ts   # Joi schemas for body, params, and query
+{feature}.dao.ts          # Database access (Mongoose only, no HTTP)
+{feature}.model.ts        # Mongoose schema, indexes, serialization
+{feature}.types.ts        # Feature input/output types when useful
+{feature}.test.ts         # HTTP behavior tests (Jest + Supertest)
 ```
 
 Support modules without HTTP endpoints omit `router` and `controller` until routes are needed.
@@ -106,7 +108,7 @@ Stack traces and internal error details are never exposed in production.
 
 ## Error handling
 
-Typed error factories live in `src/errors.js`:
+Typed error factories live in `src/errors.ts`:
 
 ```js
 throw BadRequestError("Invalid input");
@@ -128,11 +130,11 @@ Auth endpoints (`/signup`, `/login`) apply a fixed rate limit (10 requests per 1
 
 ## Environment configuration
 
-All environment variables are declared and validated at startup in `src/config.js`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing. Feature code imports named constants from `config.js` — never reads `process.env` directly.
+All environment variables are declared and validated at startup in `src/config.ts`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing. Feature code imports named constants from `config.ts` — never reads `process.env` directly.
 
 ## Logging
 
-Structured JSON logging via [Pino](https://getpino.io). Import `src/utils/logger.js` and use `logger.info()` / `logger.error()` — never `console.log`. In development, `pino-pretty` formats output automatically. In production, raw JSON goes to stdout for log aggregators. HTTP request logging (method, URL, status, response time) is handled by `pino-http` middleware. `LOG_LEVEL` controls verbosity (default: `info`).
+Structured JSON logging via [Pino](https://getpino.io). Import `src/utils/logger.ts` and use `logger.info()` / `logger.error()` — never `console.log`. In development, `pino-pretty` formats output automatically. In production, raw JSON goes to stdout for log aggregators. HTTP request logging (method, URL, status, response time) is handled by `pino-http` middleware. `LOG_LEVEL` controls verbosity (default: `info`).
 
 ## Pagination
 
@@ -142,24 +144,24 @@ The trade-off is that arbitrary page jumps and result totals are not supported. 
 
 ## Testing approach
 
-- Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.js`
+- Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`
 - HTTP behavior is tested end-to-end via Supertest against the real Express app
-- Mongoose is mocked at the model level (`src/tests/jest-mongoose-mock.js`) to avoid requiring a live database in CI
+- Mongoose is mocked at the model level (`src/tests/jest-mongoose-mock.ts`) to avoid requiring a live database in CI
 - Every feature covers: happy path, validation failures, auth failures, not-found cases, and DB error paths
 
 ## Docker
 
 The Dockerfile uses a two-stage build:
 
-1. **deps** — installs production dependencies only (`npm ci --omit=dev`)
-2. **production** — copies only the necessary files, runs as a non-root user (`appuser`)
+1. **build** — installs dependencies, compiles TypeScript to `dist/`, then prunes dev dependencies
+2. **production** — copies compiled output and production dependencies, runs as a non-root user (`appuser`)
 
 This keeps the final image minimal and avoids running as root in production.
 
 ## Adding a new feature
 
 1. Create `src/api/{feature}/` with the files listed in the feature module pattern above
-2. Register the router in `src/router.js`
-3. Add environment variables to `src/config.js` if needed
+2. Register the router in `src/router.ts`
+3. Add environment variables to `src/config.ts` if needed
 4. Write tests covering the HTTP behavior
-5. Run `npm run validate && npm test` before committing
+5. Run `npm run validate && npm run typecheck && npm test` before committing

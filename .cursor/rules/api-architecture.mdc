@@ -9,7 +9,7 @@ Full reference: `ARCHITECTURE.md` at the project root. These rules are the actio
 
 ## Stack
 
-Node.js 24 ESM · Express 5 · Mongoose 8 · JWT · Joi · Jest + Supertest · Docker · GitHub Actions
+Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Joi · Jest + Supertest · Docker · GitHub Actions
 
 ## Layer flow — never skip or reverse
 
@@ -28,22 +28,23 @@ router → controller → service → dao → model
 Create files under `src/api/{feature}/` following this pattern:
 
 ```
-{feature}.router.js
-{feature}.controller.js
-{feature}.service.js
-{feature}.validation.js   # Joi schemas
-{feature}.dao.js          # Mongoose queries
-{feature}.model.js        # Schema + model
-{feature}.test.js         # Jest + Supertest
+{feature}.router.ts
+{feature}.controller.ts
+{feature}.service.ts
+{feature}.validation.ts   # Joi schemas
+{feature}.dao.ts          # Mongoose queries
+{feature}.model.ts        # Schema + model
+{feature}.types.ts        # Feature input/output types when useful
+{feature}.test.ts         # Jest + Supertest
 ```
 
-Register the router in `src/router.js`. Never create global `controllers/`, `services/`, or `models/` folders.
+Register the router in `src/router.ts`. Never create global `controllers/`, `services/`, or `models/` folders.
 
 ## Errors
 
-Always use factories from `src/errors.js`:
+Always use factories from `src/errors.ts`:
 
-```js
+```ts
 throw BadRequestError("message");
 throw UnauthorizedError("message", "ERROR_CODE");
 throw NotFoundError("message");
@@ -55,7 +56,7 @@ Never `res.status(400).json(...)` directly from a controller. Let errors propaga
 
 Apply Joi middleware at the router before the controller:
 
-```js
+```ts
 router.post("/", validate(schema), asyncHandler(handler));           // body
 router.get("/:id", validateParams(idSchema), asyncHandler(handler)); // params
 router.get("/", validateQuery(querySchema), asyncHandler(handler));  // query → req.validatedQuery
@@ -63,12 +64,12 @@ router.get("/", validateQuery(querySchema), asyncHandler(handler));  // query �
 
 ## Environment variables
 
-Declare and export from `src/config.js`. Never read `process.env` directly in feature code.
+Declare and export from `src/config.ts`. Never read `process.env` directly in feature code.
 
 ## DO NOT
 
 - Access the database from a controller or service
-- Use `process.env` outside `src/config.js`
+- Use `process.env` outside `src/config.ts`
 - Add Express objects (`req`, `res`, `next`) to a service
 - Create files outside `src/api/{feature}/` for feature-specific code
 - Return raw Mongoose documents from a DAO on read queries (use `.lean()`)

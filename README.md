@@ -1,10 +1,10 @@
 # Express Mongo API Starter
 
-A production-minded **Node.js REST API starter** built with **Express 5**, **MongoDB**, JWT auth, validation, tests, and practical defaults for service-oriented backends.
+A production-minded **TypeScript REST API starter** built with **Express 5**, **MongoDB**, JWT auth, validation, tests, and practical defaults for service-oriented backends.
 
 ## Features
 
-- **JavaScript (ESM)** — native modules
+- **TypeScript (ESM)** — strict runtime code compiled to `dist/`
 - **Express 5** — HTTP API and middleware
 - **JWT** — token-based auth
 - **Joi** — request validation
@@ -57,14 +57,16 @@ A production-minded **Node.js REST API starter** built with **Express 5**, **Mon
 | ----------------------- | ----------------------- |
 | `npm start`             | Start server            |
 | `npm run dev`           | Start dev server        |
+| `npm run build`         | Compile TypeScript      |
 | `npm run validate`      | ESLint + Prettier check |
 | `npm run format`        | Format + ESLint --fix   |
 | `npm test`              | Jest                    |
 | `npm run test:coverage` | Jest + coverage         |
+| `npm run typecheck`     | TypeScript typecheck    |
 
 ## Environment variables
 
-Copy `.env.example` to `.env`. In non-production, variables are loaded with `dotenv` (see `src/config.js`).
+Copy `.env.example` to `.env`. In non-production, variables are loaded with `dotenv` (see `src/config.ts`).
 
 | Variable                    | Required | Description                                                                                                            |
 | --------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -143,7 +145,7 @@ Stack traces are included in non-production environments only and never exposed 
 
 ### Adding new features
 
-Features live under `src/api/<feature>/` and are wired in `src/router.js`.
+Features live under `src/api/<feature>/` and are wired in `src/router.ts`.
 
 Use `src/api/product/` as the reference module for CRUD routes, Joi validation, auth middleware, service/DAO/model separation, and feature-level tests.
 
@@ -164,6 +166,7 @@ Each file points to `ARCHITECTURE.md` as the source of truth so any AI assistant
 ## Testing
 
 ```bash
+npm run typecheck
 npm test
 npm run test:coverage
 ```

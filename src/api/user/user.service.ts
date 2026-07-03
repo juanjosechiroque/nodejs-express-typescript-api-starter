@@ -2,10 +2,11 @@ import bcrypt from "bcrypt";
 import { BadRequestError, UnauthorizedError } from "../../errors.js";
 import { generateToken } from "../../utils/jwt.js";
 import { createUserDao, findUserByEmailDao } from "./user.dao.js";
+import type { UserCredentials } from "./user.types.js";
 
 const EMAIL_ALREADY_REGISTERED_MESSAGE = "Email address is already registered";
 
-export async function registerUser({ email, password }) {
+export async function registerUser({ email, password }: UserCredentials) {
     const normalizedEmail = email.trim().toLowerCase();
     const existingUser = await findUserByEmailDao({ email: normalizedEmail });
 
@@ -17,7 +18,7 @@ export async function registerUser({ email, password }) {
     try {
         user = await createUserDao({ email: normalizedEmail, password });
     } catch (err) {
-        if (err.code === 11000) {
+        if (typeof err === "object" && err != null && "code" in err && err.code === 11000) {
             throw BadRequestError(EMAIL_ALREADY_REGISTERED_MESSAGE);
         }
         throw err;
@@ -30,7 +31,7 @@ export async function registerUser({ email, password }) {
     return token;
 }
 
-export async function loginUser({ email, password }) {
+export async function loginUser({ email, password }: UserCredentials) {
     const normalizedEmail = email.trim().toLowerCase();
     const user = await findUserByEmailDao({ email: normalizedEmail });
 

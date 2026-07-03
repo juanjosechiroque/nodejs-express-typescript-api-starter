@@ -1,4 +1,20 @@
-function resolveError(err) {
+import type { ErrorRequestHandler } from "express";
+import type { AppError } from "../errors.js";
+
+type ResolvedError = {
+    statusCode: number;
+    code: string;
+    message: string;
+    stack?: string | undefined;
+    details?: AppError["details"] | undefined;
+};
+
+type ErrorLike = Partial<AppError> & {
+    status?: number;
+    name?: string;
+};
+
+function resolveError(err: unknown): ResolvedError {
     if (err == null || typeof err !== "object") {
         return {
             statusCode: 500,
@@ -9,33 +25,35 @@ function resolveError(err) {
         };
     }
 
-    if (err.statusCode) {
+    const errorLike = err as ErrorLike;
+
+    if (errorLike.statusCode) {
         return {
-            statusCode: err.statusCode,
-            code: err.code ?? "Error",
-            message: err.message,
-            stack: err.stack,
-            details: err.details,
+            statusCode: errorLike.statusCode,
+            code: errorLike.code ?? "Error",
+            message: errorLike.message ?? "Unexpected error",
+            stack: errorLike.stack,
+            details: errorLike.details,
         };
     }
 
     // Use err.name so tests work when mongoose is mocked (no mongoose.Error.* constructors).
-    if (err.name === "CastError") {
+    if (errorLike.name === "CastError") {
         return {
             statusCode: 400,
             code: "BadRequestError",
             message: "Invalid identifier format",
-            stack: err.stack,
+            stack: errorLike.stack,
             details: undefined,
         };
     }
 
-    if (err.name === "ValidationError") {
+    if (errorLike.name === "ValidationError") {
         return {
             statusCode: 400,
             code: "BadRequestError",
             message: "Validation failed",
-            stack: err.stack,
+            stack: errorLike.stack,
             details: undefined,
         };
     }
@@ -44,13 +62,16 @@ function resolveError(err) {
     return {
         statusCode: 500,
         code: "INTERNAL_SERVER_ERROR",
-        message: isProduction ? "Internal server error" : (err.message ?? "Internal server error"),
-        stack: err.stack,
+        message: isProduction
+            ? "Internal server error"
+            : (errorLike.message ?? "Internal server error"),
+        stack: errorLike.stack,
         details: undefined,
     };
 }
 
-export const errorGenericHandler = (err, req, res, next) => {
+export const errorGenericHandler: ErrorRequestHandler = (err, _req, res, next) => {
+    void next;
     const resolved = resolveError(err);
 
     if (resolved.statusCode >= 500 && process.env.NODE_ENV === "production") {
@@ -58,7 +79,13 @@ export const errorGenericHandler = (err, req, res, next) => {
         resolved.code = "INTERNAL_SERVER_ERROR";
     }
 
-    const result = {
+    const result: {
+        status: number;
+        code: string;
+        message: string;
+        details?: AppError["details"] | undefined;
+        stack?: string | undefined;
+    } = {
         status: resolved.statusCode,
         code: resolved.code,
         message: resolved.message,

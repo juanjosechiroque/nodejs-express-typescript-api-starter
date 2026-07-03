@@ -9,14 +9,14 @@ const server = app.listen(PORT, () => {
     logger.info({ port: PORT }, "Server started");
 });
 
-server.on("error", (err) => {
+server.on("error", (err: Error) => {
     logger.error({ err }, "Server failed to start");
     process.exit(1);
 });
 
-async function shutdown(signal) {
+async function shutdown(signal: NodeJS.Signals) {
     logger.info({ signal }, "Shutdown initiated");
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         server.close((closeErr) => (closeErr ? reject(closeErr) : resolve()));
     });
     await disconnectDB();
