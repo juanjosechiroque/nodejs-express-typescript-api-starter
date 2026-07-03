@@ -85,7 +85,9 @@ router.get("/:id", validateParams(productIdParamSchema), asyncHandler(getProduct
 router.get("/", validateQuery(listProductsQuerySchema), asyncHandler(getProductsHandler));
 ```
 
-The `product` feature is intentionally small. Treat it as the reference implementation for routing, validation, auth-protected writes, pagination, service/DAO/model separation, and tests. Add business-heavy modules in downstream apps rather than turning this starter into a full product.
+The `product` feature is intentionally small. Treat it as the reference implementation for routing, validation, auth-protected writes, pagination, query filters, service/DAO/model separation, and tests. Products include a minimal lifecycle (`draft`, `active`, `archived`) plus inventory-style fields (`price`, `stock`, `isFeatured`). Add business-heavy modules in downstream apps rather than turning this starter into a full product.
+
+Keep small business rules in the service layer. Example: active products must be archived before deletion.
 
 Validation errors return `400` with a `details` array identifying each failing field.
 

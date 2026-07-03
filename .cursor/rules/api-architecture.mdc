@@ -40,7 +40,9 @@ Create files under `src/api/{feature}/` following this pattern:
 
 Register the router in `src/router.ts`. Never create global `controllers/`, `services/`, or `models/` folders.
 
-Keep the starter intentionally small. The current `product` feature is a reference module for CRUD, auth-protected writes, Zod validation, pagination, layering, and tests — not a full product domain.
+Keep the starter intentionally small. The current `product` feature is a reference module for CRUD, auth-protected writes, Zod validation, pagination, simple query filters, layering, and tests — not a full product domain.
+
+Product rules are deliberately minimal: products have `price`, `stock`, `status` (`draft`, `active`, `archived`), and `isFeatured`; active products must be archived before deletion. Keep this kind of business rule in the service layer.
 
 ## Errors
 

@@ -3,6 +3,7 @@ import { vi } from "vitest";
 const mockSchema = () => ({
     set: vi.fn(),
     pre: vi.fn(),
+    index: vi.fn(),
 });
 
 const createMockModel = () => {

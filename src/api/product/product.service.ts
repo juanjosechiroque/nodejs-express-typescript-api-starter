@@ -1,4 +1,4 @@
-import { NotFoundError } from "../../errors.js";
+import { BadRequestError, NotFoundError } from "../../errors.js";
 import {
     createProductDao,
     getProductsDao,
@@ -8,8 +8,13 @@ import {
 } from "./product.dao.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
 
-export async function getProducts({ cursor, limit = 10 }: ListProductsInput = {}) {
-    const { items, hasMore } = await getProductsDao({ cursor, limit });
+export async function getProducts({
+    cursor,
+    limit = 10,
+    status,
+    isFeatured,
+}: ListProductsInput = {}) {
+    const { items, hasMore } = await getProductsDao({ cursor, limit, status, isFeatured });
     const lastItem = items.at(-1);
     const nextCursor = hasMore && lastItem ? lastItem._id.toString() : null;
     return {
@@ -24,8 +29,8 @@ export async function getProductById(id: string) {
     return result;
 }
 
-export async function createProduct({ name, price, description }: CreateProductInput) {
-    return await createProductDao({ name, price, description });
+export async function createProduct(input: CreateProductInput) {
+    return await createProductDao(input);
 }
 
 export async function updateProduct({ id, ...fields }: UpdateProductInput & { id: string }) {
@@ -36,7 +41,10 @@ export async function updateProduct({ id, ...fields }: UpdateProductInput & { id
 }
 
 export async function deleteProduct(productId: string) {
-    const result = await deleteProductDao(productId);
-    if (!result) throw NotFoundError("Product not found");
-    return result;
+    const product = await getProductByIdDao(productId);
+    if (!product) throw NotFoundError("Product not found");
+    if (product.status === "active") {
+        throw BadRequestError("Active products must be archived before deletion");
+    }
+    return await deleteProductDao(productId);
 }

@@ -101,13 +101,15 @@ The **`auth`** feature is a minimal **register + login** flow: both endpoints re
 
 ### Products (reference module)
 
-The product feature is intentionally small: it exists as a reference module for validation, auth-protected writes, service/DAO/model separation, cursor pagination, and feature-level tests.
+The product feature is intentionally small: it exists as a reference module for validation, auth-protected writes, service/DAO/model separation, cursor pagination, simple filters, and feature-level tests. Products include `price`, `stock`, `status` (`draft`, `active`, `archived`), and `isFeatured`.
 
-- `GET /v1/products` — list (`cursor`, `limit` query params); public
+- `GET /v1/products` — list (`cursor`, `limit`, `status`, `isFeatured` query params); public
 - `GET /v1/products/:id` — get by id; public
 - `POST /v1/products` — create; **JWT required**
 - `PUT /v1/products/:id` — update; **JWT required**
 - `DELETE /v1/products/:id` — delete; **JWT required**
+
+Active products must be archived before deletion. This keeps the example domain small while still showing where service-level business rules belong.
 
 ## Docker
 
@@ -149,7 +151,7 @@ Stack traces are included in non-production environments only and never exposed 
 
 Features live under `src/api/<feature>/` and are wired in `src/router.ts`.
 
-Use `src/api/product/` as the intentionally small reference module for CRUD routes, Zod validation, auth middleware, service/DAO/model separation, cursor pagination, and feature-level tests.
+Use `src/api/product/` as the intentionally small reference module for CRUD routes, Zod validation, auth middleware, service/DAO/model separation, cursor pagination, filtering, simple service-level rules, and feature-level tests.
 
 Architecture decisions, layer responsibilities, and coding conventions are documented in [ARCHITECTURE.md](./ARCHITECTURE.md), including the full project structure and layer flow.
 

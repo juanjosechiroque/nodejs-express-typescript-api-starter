@@ -2,14 +2,23 @@ import { Types } from "mongoose";
 import Product from "./product.model.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
 
-export async function createProductDao({ name, price, description }: CreateProductInput) {
-    const product = new Product({ name, price, description });
+export async function createProductDao(input: CreateProductInput) {
+    const product = new Product(input);
     await product.save();
     return product;
 }
 
-export async function getProductsDao({ cursor, limit = 10 }: ListProductsInput = {}) {
-    const query = cursor ? { _id: { $gt: new Types.ObjectId(cursor) } } : {};
+export async function getProductsDao({
+    cursor,
+    limit = 10,
+    status,
+    isFeatured,
+}: ListProductsInput = {}) {
+    const query: Record<string, unknown> = {};
+    if (cursor) query._id = { $gt: new Types.ObjectId(cursor) };
+    if (status) query.status = status;
+    if (isFeatured !== undefined) query.isFeatured = isFeatured;
+
     const items = await Product.find(query)
         .limit(limit + 1)
         .sort({ _id: 1 })

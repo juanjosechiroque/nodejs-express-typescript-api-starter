@@ -28,8 +28,8 @@ export async function getProductByIdHandler(req: Request, res: Response) {
 }
 
 export async function createProductHandler(req: Request, res: Response) {
-    const { name, price, description } = req.body as CreateProductInput;
-    const result = await createProduct({ name, price, description });
+    const input = req.body as CreateProductInput;
+    const result = await createProduct(input);
     sendResponse(res, 201, result, "Product created");
 }
 
