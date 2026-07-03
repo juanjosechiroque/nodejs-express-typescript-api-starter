@@ -2,13 +2,13 @@ import { Types } from "mongoose";
 import Product from "./product.model.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
 
-export async function createProductDao(input: CreateProductInput) {
+export async function createProduct(input: CreateProductInput) {
     const product = new Product(input);
     await product.save();
     return product;
 }
 
-export async function getProductsDao({
+export async function findProducts({
     cursor,
     limit = 10,
     status,
@@ -25,18 +25,20 @@ export async function getProductsDao({
         .lean();
     const hasMore = items.length > limit;
     if (hasMore) items.pop();
-    return { items, hasMore };
+    const lastItem = items.at(-1);
+    const nextCursor = hasMore && lastItem ? lastItem._id.toString() : null;
+    return { items, hasMore, nextCursor };
 }
 
-export async function getProductByIdDao(id: string) {
+export async function findProductById(id: string) {
     return await Product.findById(id).lean();
 }
 
-export async function updateProductDao(id: string, update: UpdateProductInput) {
+export async function updateProductById(id: string, update: UpdateProductInput) {
     return await Product.findByIdAndUpdate(id, update, { new: true });
 }
 
-export async function deleteProductDao(productId: string) {
+export async function deleteProductById(productId: string) {
     const product = await Product.findByIdAndDelete(productId);
     return product;
 }

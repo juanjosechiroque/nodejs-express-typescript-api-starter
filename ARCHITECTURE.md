@@ -46,7 +46,7 @@ Each domain feature is self-contained in `src/api/{feature}/`:
 {feature}.controller.ts   # HTTP layer: reads req, calls service, sends response
 {feature}.service.ts      # Business logic and orchestration
 {feature}.validation.ts   # Zod schemas for body, params, and query
-{feature}.dao.ts          # Database access (Mongoose only, no HTTP)
+{feature}.repository.ts   # Persistence operations (Mongoose hidden from services)
 {feature}.model.ts        # Mongoose schema, indexes, serialization
 {feature}.types.ts        # Feature input/output types when useful
 {feature}.test.ts         # Unit or HTTP behavior tests (Vitest + Supertest)
@@ -57,7 +57,7 @@ Support modules without HTTP endpoints omit `router` and `controller` until rout
 ## Layer responsibilities and data flow
 
 ```
-router → controller → service → dao → model
+router → controller → service → repository → model
 ```
 
 | Layer        | Responsibility                                                       | Must not                       |
@@ -65,10 +65,10 @@ router → controller → service → dao → model
 | `router`     | Declare routes, attach middleware, wrap handlers with `asyncHandler` | Contain logic                  |
 | `controller` | Read `req`, call service, send response via `sendResponse()`         | Touch the database             |
 | `service`    | Business rules, orchestration, error throwing                        | Import `req`, `res`, or `next` |
-| `dao`        | All Mongoose queries                                                 | Contain business logic         |
+| `repository` | Persistence operations and query strategy                            | Contain business logic         |
 | `model`      | Schema definition, indexes, `toJSON` transforms                      | Contain query logic            |
 
-Controllers never access the database directly. Services never reference Express objects.
+Controllers never access the database directly. Services never reference Express objects or Mongoose APIs directly.
 
 ## Request validation
 
@@ -85,7 +85,7 @@ router.get("/:id", validateParams(productIdParamSchema), asyncHandler(getProduct
 router.get("/", validateQuery(listProductsQuerySchema), asyncHandler(getProductsHandler));
 ```
 
-The `product` feature is intentionally small. Treat it as the reference implementation for routing, validation, auth-protected writes, pagination, query filters, service/DAO/model separation, and tests. Products include a minimal lifecycle (`draft`, `active`, `archived`) plus inventory-style fields (`price`, `stock`, `isFeatured`). Add business-heavy modules in downstream apps rather than turning this starter into a full product.
+The `product` feature is intentionally small. Treat it as the reference implementation for routing, validation, auth-protected writes, pagination, query filters, service/repository/model separation, and tests. Products include a minimal lifecycle (`draft`, `active`, `archived`) plus inventory-style fields (`price`, `stock`, `isFeatured`). Add business-heavy modules in downstream apps rather than turning this starter into a full product.
 
 Keep small business rules in the service layer. Example: active products must be archived before deletion.
 
@@ -144,7 +144,7 @@ Structured JSON logging via [Pino](https://getpino.io). Import `src/utils/logger
 
 List endpoints use cursor-based pagination over `_id`. MongoDB ObjectIds are monotonically increasing and carry a primary index, so `{ _id: { $gt: cursor } }` is always an O(log n) index range scan — unlike `skip`, which degrades linearly with collection size. It also prevents phantom reads when documents are inserted between pages.
 
-The trade-off is that arbitrary page jumps and result totals are not supported. For admin panels or reporting use cases, swap the DAO to `skip` + `countDocuments`.
+The trade-off is that arbitrary page jumps and result totals are not supported. For admin panels or reporting use cases, swap the repository implementation to `skip` + `countDocuments`.
 
 ## Testing approach
 

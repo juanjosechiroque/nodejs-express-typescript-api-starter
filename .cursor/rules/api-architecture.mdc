@@ -14,13 +14,13 @@ Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Zod · Vitest 
 ## Layer flow — never skip or reverse
 
 ```
-router → controller → service → dao → model
+router → controller → service → repository → model
 ```
 
 - **router**: routes + middleware only. Always wrap handlers: `asyncHandler(handler)`.
 - **controller**: reads `req`, calls one service function, sends response with `sendResponse(res, status, data, message)`. No DB access ever.
-- **service**: business logic only. Never import `req`, `res`, or `next`.
-- **dao**: all Mongoose queries. Use `.lean()` on read queries. No business logic.
+- **service**: business logic only. Never import `req`, `res`, `next`, or Mongoose APIs.
+- **repository**: persistence operations and query strategy. Use `.lean()` on read queries. No business logic.
 - **model**: schema, indexes, `toJSON` transform. No query logic.
 
 ## When generating a new feature
@@ -32,7 +32,7 @@ Create files under `src/api/{feature}/` following this pattern:
 {feature}.controller.ts
 {feature}.service.ts
 {feature}.validation.ts   # Zod schemas
-{feature}.dao.ts          # Mongoose queries
+{feature}.repository.ts   # Persistence operations
 {feature}.model.ts        # Schema + model
 {feature}.types.ts        # Feature input/output types when useful
 {feature}.test.ts         # Vitest unit or HTTP behavior tests
@@ -76,4 +76,4 @@ Declare and validate with Zod in `src/config.ts`. Never read `process.env` direc
 - Use `process.env` outside `src/config.ts`
 - Add Express objects (`req`, `res`, `next`) to a service
 - Create files outside `src/api/{feature}/` for feature-specific code
-- Return raw Mongoose documents from a DAO on read queries (use `.lean()`)
+- Return raw Mongoose documents from a repository on read queries (use `.lean()`)

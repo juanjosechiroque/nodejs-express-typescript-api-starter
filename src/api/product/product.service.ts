@@ -1,11 +1,5 @@
 import { BadRequestError, NotFoundError } from "../../errors.js";
-import {
-    createProductDao,
-    getProductsDao,
-    getProductByIdDao,
-    updateProductDao,
-    deleteProductDao,
-} from "./product.dao.js";
+import * as productRepository from "./product.repository.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
 
 export async function getProducts({
@@ -14,9 +8,12 @@ export async function getProducts({
     status,
     isFeatured,
 }: ListProductsInput = {}) {
-    const { items, hasMore } = await getProductsDao({ cursor, limit, status, isFeatured });
-    const lastItem = items.at(-1);
-    const nextCursor = hasMore && lastItem ? lastItem._id.toString() : null;
+    const { items, hasMore, nextCursor } = await productRepository.findProducts({
+        cursor,
+        limit,
+        status,
+        isFeatured,
+    });
     return {
         items,
         pagination: { limit, nextCursor, hasMore },
@@ -24,27 +21,27 @@ export async function getProducts({
 }
 
 export async function getProductById(id: string) {
-    const result = await getProductByIdDao(id);
+    const result = await productRepository.findProductById(id);
     if (!result) throw NotFoundError("Product not found");
     return result;
 }
 
 export async function createProduct(input: CreateProductInput) {
-    return await createProductDao(input);
+    return await productRepository.createProduct(input);
 }
 
 export async function updateProduct({ id, ...fields }: UpdateProductInput & { id: string }) {
     const update = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined));
-    const result = await updateProductDao(id, update);
+    const result = await productRepository.updateProductById(id, update);
     if (!result) throw NotFoundError("Product not found");
     return result;
 }
 
 export async function deleteProduct(productId: string) {
-    const product = await getProductByIdDao(productId);
+    const product = await productRepository.findProductById(productId);
     if (!product) throw NotFoundError("Product not found");
     if (product.status === "active") {
         throw BadRequestError("Active products must be archived before deletion");
     }
-    return await deleteProductDao(productId);
+    return await productRepository.deleteProductById(productId);
 }
