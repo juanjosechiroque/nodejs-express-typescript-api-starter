@@ -16,6 +16,22 @@ A production-minded **TypeScript REST API starter** built with **Express 5**, **
 - **Health** — monitoring endpoint
 - **CI/CD** — GitHub Actions validates, tests, and builds the Docker image on `main`
 
+## Architecture highlights
+
+- **Feature modules** keep routes, controllers, services, repositories, models, validation, and tests together.
+- **Service/repository separation** keeps business rules out of persistence code and hides Mongoose details from services.
+- **Zod contracts** validate environment variables, request bodies, route params, and query strings.
+- **Centralized errors and responses** keep success and failure payloads predictable.
+- **Cursor pagination** avoids `skip`-based pagination costs on growing collections.
+
+## Production-minded decisions
+
+- Environment configuration is validated at startup and fails fast when required values are missing.
+- The Docker image uses a multi-stage build and runs as a non-root user.
+- Security middleware includes Helmet, CORS controls, request rate limiting, auth-route rate limiting, and JWT bearer auth.
+- Logs use Pino: pretty in development, JSON in production.
+- CI runs formatting/lint checks, TypeScript typecheck, Vitest coverage, and Docker image build.
+
 ## Requirements
 
 - Node.js 24+
@@ -60,6 +76,7 @@ A production-minded **TypeScript REST API starter** built with **Express 5**, **
 | `npm run build`         | Compile TypeScript      |
 | `npm run validate`      | ESLint + Prettier check |
 | `npm run format`        | Format + ESLint --fix   |
+| `npm run seed`          | Seed demo user/products |
 | `npm test`              | Vitest                  |
 | `npm run test:coverage` | Vitest + coverage       |
 | `npm run typecheck`     | TypeScript typecheck    |
@@ -113,12 +130,57 @@ Active products must be archived before deletion. This keeps the example domain 
 
 ## Docker
 
+### Build and run the API image
+
 ```bash
 docker build -t nodejs-express-typescript-api-starter .
 docker run -p 3000:3000 --env-file .env nodejs-express-typescript-api-starter
 ```
 
 The image uses a multi-stage build and runs as a non-root user in production.
+
+### Run API + MongoDB with Docker Compose
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+The Compose setup starts the production API image plus a local MongoDB container by default. A `.env` file is optional for Compose; Docker Compose reads it for variable substitution when present, but the compose file also provides safe local defaults. Inside Compose, `COMPOSE_MONGODB_URI` controls the API container database connection and defaults to `mongodb://mongo:27017/api_starter`, because `localhost` inside the API container would point to the API container itself, not MongoDB.
+
+Compose uses `JWT_SECRET` when provided, otherwise it falls back to a demo-only secret long enough to satisfy startup validation. Replace it for real environments.
+
+To use MongoDB Atlas or another remote MongoDB with Compose, set only `COMPOSE_MONGODB_URI` in your `.env`; no change to `docker-compose.yml` is required.
+
+```env
+COMPOSE_MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>
+```
+
+Useful commands:
+
+```bash
+docker compose up --build
+docker compose down
+docker compose down -v
+```
+
+Use `docker compose down -v` only when you want to remove the local MongoDB volume and start with an empty database.
+
+## Demo data
+
+Seed a local or Compose-backed database manually:
+
+```bash
+npm run seed
+```
+
+The seed is idempotent and creates or updates:
+
+- demo user: `demo@example.com`
+- demo password: `DemoPassword123!`
+- five products: three `active`, one `draft`, one `archived`, covering stock and `isFeatured`
+
+If you are using Docker Compose, keep Compose running and set your local `.env` `MONGODB_URI` to `mongodb://localhost:27017/api_starter` before running the seed from your host machine.
 
 ## Response shape
 
@@ -169,6 +231,8 @@ Each file points to `ARCHITECTURE.md` as the source of truth so any AI assistant
 
 ## Testing
 
+The test setup uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models so CI does not require a live database.
+
 ```bash
 npm run typecheck
 npm test
@@ -176,6 +240,10 @@ npm run test:coverage
 ```
 
 Husky runs `npm run validate` automatically on each commit to keep lint and formatting clean.
+
+## Trade-offs
+
+This is a starter, not a full product. The `product` module is intentionally small but not empty: it demonstrates validation, auth-protected writes, repository-backed persistence, cursor pagination, filters, defaults, and one service-level rule (`active` products must be archived before deletion). Business-heavy modules such as payments, orders, subscriptions, or multi-tenant workflows belong in downstream applications built from this starter.
 
 ## License
 

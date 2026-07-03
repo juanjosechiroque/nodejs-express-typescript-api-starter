@@ -1,0 +1,40 @@
+services:
+    api:
+        build:
+            context: .
+            target: production
+            args:
+                NODE_IMAGE: node:24-slim
+        image: nodejs-express-typescript-api-starter:local
+        restart: unless-stopped
+        environment:
+            NODE_ENV: production
+            PORT: 3000
+            MONGODB_URI: ${COMPOSE_MONGODB_URI:-mongodb://mongo:27017/api_starter}
+            JWT_SECRET: ${JWT_SECRET:-compose_demo_jwt_secret_at_least_32_chars}
+            JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-1h}
+            RATE_LIMIT_WINDOW_MINUTES: ${RATE_LIMIT_WINDOW_MINUTES:-1}
+            RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-60}
+            LOG_LEVEL: ${LOG_LEVEL:-info}
+        ports:
+            - "${PORT:-3000}:3000"
+        depends_on:
+            mongo:
+                condition: service_healthy
+
+    mongo:
+        image: mongo:8.0
+        restart: unless-stopped
+        ports:
+            - "${MONGO_PORT:-27017}:27017"
+        volumes:
+            - mongo-data:/data/db
+        healthcheck:
+            test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+            interval: 30s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+
+volumes:
+    mongo-data:

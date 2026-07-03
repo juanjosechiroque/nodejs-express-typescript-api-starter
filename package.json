@@ -11,6 +11,7 @@
         "validate": "eslint . && prettier --check .",
         "format": "prettier --write . && eslint . --fix",
         "prepare": "husky || true",
+        "seed": "tsx src/scripts/seed.ts",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
         "typecheck": "tsc --noEmit"
