@@ -1,35 +1,24 @@
-import Joi from "joi";
+import { z } from "zod";
 
-const mongoIdSchema = Joi.string()
-    .length(24)
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .required()
-    .messages({
-        "string.pattern.base": "Invalid id format",
-    });
+const mongoIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid id format");
 
-export const productIdParamSchema = Joi.object().keys({
+export const productIdParamSchema = z.object({
     id: mongoIdSchema,
 });
 
-export const createProductSchema = Joi.object().keys({
-    name: Joi.string().required(),
-    price: Joi.number().positive().required(),
-    description: Joi.string().allow("").optional(),
+export const createProductSchema = z.object({
+    name: z.string().trim().min(1),
+    price: z.coerce.number().positive(),
+    description: z.string().optional(),
 });
 
-export const updateProductSchema = Joi.object()
-    .keys({
-        name: Joi.string().optional(),
-        price: Joi.number().positive().optional(),
-        description: Joi.string().allow("").optional(),
-    })
-    .min(1);
+export const updateProductSchema = createProductSchema
+    .partial()
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "At least one field is required",
+    });
 
-export const listProductsQuerySchema = Joi.object({
-    limit: Joi.number().integer().min(1).max(100).default(10),
-    cursor: Joi.string()
-        .length(24)
-        .pattern(/^[0-9a-fA-F]{24}$/)
-        .optional(),
+export const listProductsQuerySchema = z.object({
+    limit: z.coerce.number().int().min(1).max(100).default(10),
+    cursor: mongoIdSchema.optional(),
 });

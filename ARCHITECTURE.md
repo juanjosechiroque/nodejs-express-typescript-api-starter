@@ -11,7 +11,7 @@ This document describes the structure, conventions, and design decisions behind 
 | Framework        | Express 5                            |
 | Database         | MongoDB via Mongoose 8               |
 | Auth             | JWT (jsonwebtoken)                   |
-| Validation       | Joi (requests) + Zod (environment)   |
+| Validation       | Zod                                  |
 | Testing          | Jest + Supertest                     |
 | Containerization | Docker (multi-stage, non-root)       |
 | CI/CD            | GitHub Actions                       |
@@ -45,7 +45,7 @@ Each domain feature is self-contained in `src/api/{feature}/`:
 {feature}.router.ts       # Routes + middleware wiring
 {feature}.controller.ts   # HTTP layer: reads req, calls service, sends response
 {feature}.service.ts      # Business logic and orchestration
-{feature}.validation.ts   # Joi schemas for body, params, and query
+{feature}.validation.ts   # Zod schemas for body, params, and query
 {feature}.dao.ts          # Database access (Mongoose only, no HTTP)
 {feature}.model.ts        # Mongoose schema, indexes, serialization
 {feature}.types.ts        # Feature input/output types when useful
@@ -72,7 +72,7 @@ Controllers never access the database directly. Services never reference Express
 
 ## Request validation
 
-Validation uses Joi middleware applied at the router level before the controller runs:
+Validation uses Zod middleware applied at the router level before the controller runs:
 
 ```js
 // validate body

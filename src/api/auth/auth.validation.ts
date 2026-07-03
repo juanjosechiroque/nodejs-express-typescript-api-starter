@@ -1,8 +1,6 @@
-import Joi from "joi";
+import { z } from "zod";
 
-export const loginSchema = Joi.object().keys({
-    email: Joi.string().email().required().trim().lowercase(),
-    password: Joi.string().min(8).required().messages({
-        "string.min": "Password must be at least 8 characters long",
-    }),
+export const loginSchema = z.object({
+    email: z.email().trim().toLowerCase(),
+    password: z.string().min(8, "Password must be at least 8 characters long"),
 });

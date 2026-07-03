@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import Joi from "joi";
+import { z } from "zod";
 import { validate, validateParams, validateQuery } from "./validationMiddleware.js";
 
 const next = jest.fn();
@@ -13,7 +13,7 @@ function makeRes() {
 
 beforeEach(() => next.mockClear());
 
-const schema = Joi.object({ name: Joi.string().required() });
+const schema = z.object({ name: z.string() });
 
 describe("validate (body)", () => {
     test("calls next with no error when body is valid", () => {
@@ -39,7 +39,7 @@ describe("validate (body)", () => {
 });
 
 describe("validateParams", () => {
-    const paramSchema = Joi.object({ id: Joi.string().required() });
+    const paramSchema = z.object({ id: z.string() });
 
     test("calls next with no error when params are valid", () => {
         const req = { params: { id: "abc123" } };
@@ -64,9 +64,9 @@ describe("validateParams", () => {
 });
 
 describe("validateQuery", () => {
-    const querySchema = Joi.object({
-        page: Joi.number().integer().min(1).default(1),
-        limit: Joi.number().integer().min(1).max(100).default(10),
+    const querySchema = z.object({
+        page: z.coerce.number().int().min(1).default(1),
+        limit: z.coerce.number().int().min(1).max(100).default(10),
     });
 
     test("calls next with no error and sets req.validatedQuery when query is valid", () => {

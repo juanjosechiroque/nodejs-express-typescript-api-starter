@@ -1,12 +1,10 @@
-export type CreateProductInput = {
-    name: string;
-    price: number;
-    description?: string | undefined;
-};
+import type { z } from "zod";
+import {
+    createProductSchema,
+    listProductsQuerySchema,
+    updateProductSchema,
+} from "./product.validation.js";
 
-export type UpdateProductInput = Partial<CreateProductInput>;
-
-export type ListProductsInput = {
-    cursor?: string | undefined;
-    limit?: number | undefined;
-};
+export type CreateProductInput = z.infer<typeof createProductSchema>;
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;
+export type ListProductsInput = Partial<z.infer<typeof listProductsQuerySchema>>;

@@ -11,8 +11,8 @@ import { sendResponse } from "../../utils/response.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
 
 export async function getProductsHandler(req: Request, res: Response) {
-    const { cursor, limit } = req.validatedQuery as ListProductsInput;
-    const result = await getProducts({ cursor, limit });
+    const query = req.validatedQuery as ListProductsInput;
+    const result = await getProducts(query);
     sendResponse(
         res,
         200,

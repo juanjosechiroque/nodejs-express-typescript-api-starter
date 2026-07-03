@@ -9,7 +9,7 @@ Full reference: `ARCHITECTURE.md` at the project root. These rules are the actio
 
 ## Stack
 
-Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Joi · Zod · Jest + Supertest · Docker · GitHub Actions
+Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Zod · Jest + Supertest · Docker · GitHub Actions
 
 ## Layer flow — never skip or reverse
 
@@ -31,7 +31,7 @@ Create files under `src/api/{feature}/` following this pattern:
 {feature}.router.ts
 {feature}.controller.ts
 {feature}.service.ts
-{feature}.validation.ts   # Joi schemas
+{feature}.validation.ts   # Zod schemas
 {feature}.dao.ts          # Mongoose queries
 {feature}.model.ts        # Schema + model
 {feature}.types.ts        # Feature input/output types when useful
@@ -54,7 +54,7 @@ Never `res.status(400).json(...)` directly from a controller. Let errors propaga
 
 ## Validation
 
-Apply Joi middleware at the router before the controller:
+Apply Zod middleware at the router before the controller:
 
 ```ts
 router.post("/", validate(schema), asyncHandler(handler));           // body

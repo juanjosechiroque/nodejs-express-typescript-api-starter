@@ -7,7 +7,7 @@ A production-minded **TypeScript REST API starter** built with **Express 5**, **
 - **TypeScript (ESM)** — strict runtime code compiled to `dist/`
 - **Express 5** — HTTP API and middleware
 - **JWT** — token-based auth
-- **Joi** — request validation
+- **Zod** — type-safe request and environment validation
 - **Jest** — end-to-end API tests next to each feature
 - **ESLint & Prettier** — enforced style and static checks
 - **Husky** — `npm run validate` on pre-commit
@@ -147,7 +147,7 @@ Stack traces are included in non-production environments only and never exposed 
 
 Features live under `src/api/<feature>/` and are wired in `src/router.ts`.
 
-Use `src/api/product/` as the reference module for CRUD routes, Joi validation, auth middleware, service/DAO/model separation, and feature-level tests.
+Use `src/api/product/` as the reference module for CRUD routes, Zod validation, auth middleware, service/DAO/model separation, and feature-level tests.
 
 Architecture decisions, layer responsibilities, and coding conventions are documented in [ARCHITECTURE.md](./ARCHITECTURE.md), including the full project structure and layer flow.
 
