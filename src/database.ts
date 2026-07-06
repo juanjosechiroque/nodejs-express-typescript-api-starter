@@ -16,5 +16,10 @@ export async function connectDB() {
 }
 
 export async function disconnectDB() {
-    await mongoose.connection.close();
+    try {
+        await mongoose.connection.close();
+        logger.info("MongoDB disconnected");
+    } catch (error) {
+        logger.error({ err: error }, "MongoDB disconnect failed");
+    }
 }

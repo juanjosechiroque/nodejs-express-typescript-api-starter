@@ -10,10 +10,8 @@ export type JwtPayload = {
 };
 
 export const generateToken = (payload: JwtPayload): string => {
-    const expiresIn = JWT_EXPIRATION_TIME as NonNullable<jwt.SignOptions["expiresIn"]>;
-
     return sign(payload, JWT_SECRET, {
-        expiresIn,
+        expiresIn: JWT_EXPIRATION_TIME as NonNullable<jwt.SignOptions["expiresIn"]>,
     });
 };
 
