@@ -14,7 +14,7 @@
         "seed": "tsx src/scripts/seed.ts",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --project tsconfig.check.json"
     },
     "keywords": [
         "express",
