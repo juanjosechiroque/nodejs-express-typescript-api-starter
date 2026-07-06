@@ -8,5 +8,5 @@ export async function createUser({ email, password }: UserCredentials) {
 }
 
 export async function findUserByEmail({ email }: Pick<UserCredentials, "email">) {
-    return await User.findOne({ email });
+    return await User.findOne({ email }).lean();
 }

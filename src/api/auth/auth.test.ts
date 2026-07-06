@@ -1,8 +1,14 @@
 import bcrypt from "bcrypt";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import mockMongoose from "../../tests/mongoose-mock.js";
 
 const { api, V1 } = await import("../../tests/helpers.js");
+
+function mockFindOne(value: unknown) {
+    mockMongoose.model("User").findOne.mockReturnValueOnce({
+        lean: vi.fn().mockResolvedValue(value),
+    });
+}
 
 describe(`POST ${V1}/auth/signup`, () => {
     test("should return a new user", async () => {
@@ -30,9 +36,7 @@ describe(`POST ${V1}/auth/signup`, () => {
 
     test("should return an error when email is already registered", async () => {
         const data = { email: "test@example.com", password: "test1234" };
-
-        const userMocked = { _id: "1", email: "test@example.com" };
-        mockMongoose.model("User").findOne.mockResolvedValueOnce(userMocked);
+        mockFindOne({ _id: "1", email: "test@example.com" });
 
         const response = await api.post(`${V1}/auth/signup`).send(data);
 
@@ -42,7 +46,7 @@ describe(`POST ${V1}/auth/signup`, () => {
 
     test("should return 400 on duplicate key race condition (err.code 11000)", async () => {
         const data = { email: "test@example.com", password: "test1234" };
-        mockMongoose.model("User").findOne.mockResolvedValueOnce(null);
+        mockFindOne(null);
         const duplicateKeyError = Object.assign(new Error("Duplicate key"), { code: 11000 });
         mockMongoose.model("User").prototype.save.mockRejectedValueOnce(duplicateKeyError);
 
@@ -72,11 +76,7 @@ describe(`POST ${V1}/auth/login`, () => {
     test("should return token when credentials are valid", async () => {
         const password = "test1234";
         const hash = await bcrypt.hash(password, 10);
-        mockMongoose.model("User").findOne.mockResolvedValueOnce({
-            _id: "1",
-            email: "test@example.com",
-            password: hash,
-        });
+        mockFindOne({ _id: "1", email: "test@example.com", password: hash });
 
         const response = await api
             .post(`${V1}/auth/login`)
@@ -87,7 +87,7 @@ describe(`POST ${V1}/auth/login`, () => {
     });
 
     test("should return 401 when user does not exist", async () => {
-        mockMongoose.model("User").findOne.mockResolvedValueOnce(null);
+        mockFindOne(null);
 
         const response = await api
             .post(`${V1}/auth/login`)
@@ -99,11 +99,7 @@ describe(`POST ${V1}/auth/login`, () => {
 
     test("should return 401 when password is wrong", async () => {
         const hash = await bcrypt.hash("correctpassword", 10);
-        mockMongoose.model("User").findOne.mockResolvedValueOnce({
-            _id: "1",
-            email: "test@example.com",
-            password: hash,
-        });
+        mockFindOne({ _id: "1", email: "test@example.com", password: hash });
 
         const response = await api
             .post(`${V1}/auth/login`)

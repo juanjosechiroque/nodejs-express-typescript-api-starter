@@ -32,7 +32,8 @@ const createMockModel = (): MockModel => {
     defaultFindChain.sort.mockReturnValue(defaultFindChain);
 
     Model.find = vi.fn(() => defaultFindChain);
-    Model.findOne = vi.fn().mockResolvedValue(null);
+    const defaultFindOneChain = { lean: vi.fn().mockResolvedValue(null) };
+    Model.findOne = vi.fn(() => defaultFindOneChain);
     const defaultFindByIdChain = { lean: vi.fn().mockResolvedValue(null) };
     Model.findById = vi.fn(() => defaultFindByIdChain);
     const defaultFindByIdAndUpdateChain = { lean: vi.fn().mockResolvedValue(null) };

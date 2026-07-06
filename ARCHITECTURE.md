@@ -146,6 +146,8 @@ List endpoints use cursor-based pagination over `_id`. MongoDB ObjectIds are mon
 
 The trade-off is that arbitrary page jumps and result totals are not supported. For admin panels or reporting use cases, swap the repository implementation to `skip` + `countDocuments`.
 
+The compound index `{ status: 1, isFeatured: 1, _id: 1 }` on the product collection follows the MongoDB ESR rule (Equality → Sort/Range): equality filters on `status` and `isFeatured` come first, then `_id` covers both the sort and the cursor range condition in a single index scan. Without it, MongoDB would use a single-field index and scan the remaining results in memory.
+
 ## Testing approach
 
 - Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`
