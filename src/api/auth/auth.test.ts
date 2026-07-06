@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import mockMongoose from "../../tests/mongoose-mock.js";
 
 const { api, V1 } = await import("../../tests/helpers.js");
@@ -10,10 +10,8 @@ function mockFindOne(value: unknown) {
     });
 }
 
-describe(`POST ${V1}/auth/signup`, () => {
-    test("should return a new user", async () => {
-        const data = { email: "test@example.com", password: "test1234" };
-
+describe("POST /v1/auth/signup", () => {
+    it("returns a JWT when registration succeeds", async () => {
         const userMocked = {
             _id: "1",
             email: "test@example.com",
@@ -28,52 +26,55 @@ describe(`POST ${V1}/auth/signup`, () => {
             return Promise.resolve(this);
         });
 
-        const response = await api.post(`${V1}/auth/signup`).send(data);
+        const response = await api
+            .post(`${V1}/auth/signup`)
+            .send({ email: "test@example.com", password: "test1234" });
 
         expect(response.status).toBe(201);
         expect(response.body.data).toBe("valid-token");
     });
 
-    test("should return an error when email is already registered", async () => {
-        const data = { email: "test@example.com", password: "test1234" };
+    it("returns 400 when the email is already registered", async () => {
         mockFindOne({ _id: "1", email: "test@example.com" });
 
-        const response = await api.post(`${V1}/auth/signup`).send(data);
+        const response = await api
+            .post(`${V1}/auth/signup`)
+            .send({ email: "test@example.com", password: "test1234" });
 
         expect(response.status).toBe(400);
         expect(response.body.message).toBe("Email address is already registered");
     });
 
-    test("should return 400 on duplicate key race condition (err.code 11000)", async () => {
-        const data = { email: "test@example.com", password: "test1234" };
+    it("returns 400 on duplicate key race condition", async () => {
         mockFindOne(null);
         const duplicateKeyError = Object.assign(new Error("Duplicate key"), { code: 11000 });
         mockMongoose.model("User").prototype.save.mockRejectedValueOnce(duplicateKeyError);
 
-        const response = await api.post(`${V1}/auth/signup`).send(data);
+        const response = await api
+            .post(`${V1}/auth/signup`)
+            .send({ email: "test@example.com", password: "test1234" });
 
         expect(response.status).toBe(400);
         expect(response.body.message).toBe("Email address is already registered");
     });
 
-    test("should return an error when input is invalid", async () => {
+    it("returns 400 when the request body is missing", async () => {
         const response = await api.post(`${V1}/auth/signup`);
         expect(response.status).toBe(400);
     });
 
-    test("should return 400 when password has less than 8 characters", async () => {
+    it("returns 400 when password is shorter than 8 characters", async () => {
         const response = await api
             .post(`${V1}/auth/signup`)
             .send({ email: "test@example.com", password: "1234567" });
 
         expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty("message");
         expect(response.body.message).toMatch(/8 characters|length|Validation/i);
     });
 });
 
-describe(`POST ${V1}/auth/login`, () => {
-    test("should return token when credentials are valid", async () => {
+describe("POST /v1/auth/login", () => {
+    it("returns a JWT when credentials are valid", async () => {
         const password = "test1234";
         const hash = await bcrypt.hash(password, 10);
         mockFindOne({ _id: "1", email: "test@example.com", password: hash });
@@ -86,7 +87,7 @@ describe(`POST ${V1}/auth/login`, () => {
         expect(response.body.data).toBe("valid-token");
     });
 
-    test("should return 401 when user does not exist", async () => {
+    it("returns 401 when the user does not exist", async () => {
         mockFindOne(null);
 
         const response = await api
@@ -97,7 +98,7 @@ describe(`POST ${V1}/auth/login`, () => {
         expect(response.body.message).toBe("Invalid email or password");
     });
 
-    test("should return 401 when password is wrong", async () => {
+    it("returns 401 when the password is wrong", async () => {
         const hash = await bcrypt.hash("correctpassword", 10);
         mockFindOne({ _id: "1", email: "test@example.com", password: hash });
 
@@ -109,7 +110,7 @@ describe(`POST ${V1}/auth/login`, () => {
         expect(response.body.message).toBe("Invalid email or password");
     });
 
-    test("should return 400 when input is invalid", async () => {
+    it("returns 400 when the request body is missing", async () => {
         const response = await api.post(`${V1}/auth/login`);
         expect(response.status).toBe(400);
     });

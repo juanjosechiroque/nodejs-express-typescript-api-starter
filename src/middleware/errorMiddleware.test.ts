@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { Request, Response } from "express";
 import { errorGenericHandler } from "./errorMiddleware.js";
@@ -25,7 +25,7 @@ describe("errorGenericHandler", () => {
         vi.resetModules();
     });
 
-    test("returns 500 when error is null", () => {
+    it("returns 500 INTERNAL_SERVER_ERROR when the error is null", () => {
         const res = makeRes();
         errorGenericHandler(null, req, res, next);
         expect(res.status).toHaveBeenCalledWith(500);
@@ -34,13 +34,13 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    test("returns 500 when error is a string", () => {
+    it("returns 500 when the error is a plain string", () => {
         const res = makeRes();
         errorGenericHandler("something broke", req, res, next);
         expect(res.status).toHaveBeenCalledWith(500);
     });
 
-    test("returns typed status and code for app errors", () => {
+    it("reflects the status code and code from a typed app error", () => {
         const res = makeRes();
         const err = { statusCode: 404, code: "NotFoundError", message: "Not found" };
         errorGenericHandler(err, req, res, next);
@@ -50,14 +50,14 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    test("falls back to 'Error' code when app error has no code", () => {
+    it("falls back to 'Error' code when the app error has no code field", () => {
         const res = makeRes();
         const err = { statusCode: 400, message: "Bad input" };
         errorGenericHandler(err, req, res, next);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: "Error" }));
     });
 
-    test("returns 400 for CastError", () => {
+    it("maps a Mongoose CastError to 400 with a safe message", () => {
         const res = makeRes();
         const err = new Error("Cast failed");
         err.name = "CastError";
@@ -71,7 +71,7 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    test("returns 400 for ValidationError", () => {
+    it("maps a Mongoose ValidationError to 400", () => {
         const res = makeRes();
         const err = new Error("Validation failed");
         err.name = "ValidationError";
@@ -82,7 +82,7 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    test("includes details array when present", () => {
+    it("includes the details array when present on the error", () => {
         const res = makeRes();
         const err = {
             statusCode: 400,
@@ -96,7 +96,7 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    test("excludes details when not an array", () => {
+    it("omits details when the value is not an array", () => {
         const res = makeRes();
         const err = {
             statusCode: 400,
@@ -109,22 +109,20 @@ describe("errorGenericHandler", () => {
         expect(body).not.toHaveProperty("details");
     });
 
-    test("includes stack in non-production", async () => {
+    it("includes the stack trace in non-production environments", async () => {
         process.env.NODE_ENV = "development";
         const { errorGenericHandler } = await import("./errorMiddleware.js");
         const res = makeRes();
-        const err = new Error("Unexpected");
-        errorGenericHandler(err, req, res, next);
+        errorGenericHandler(new Error("Unexpected"), req, res, next);
         const body = res.json.mock.calls[0]![0] as Record<string, unknown>;
         expect(body).toHaveProperty("stack");
     });
 
-    test("hides message and stack in production for 5xx errors", async () => {
+    it("hides the message and stack in production for 5xx errors", async () => {
         process.env.NODE_ENV = "production";
         const { errorGenericHandler } = await import("./errorMiddleware.js");
         const res = makeRes();
-        const err = new Error("Secret internal detail");
-        errorGenericHandler(err, req, res, next);
+        errorGenericHandler(new Error("Secret internal detail"), req, res, next);
         const body = res.json.mock.calls[0]![0] as Record<string, unknown>;
         expect(body["message"]).toBe("Internal server error");
         expect(body).not.toHaveProperty("stack");

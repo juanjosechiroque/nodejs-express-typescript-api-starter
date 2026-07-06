@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Schema } from "mongoose";
 import { toJSONPlugin } from "./toJSONPlugin.js";
 
@@ -19,26 +19,26 @@ describe("toJSONPlugin", () => {
         return capturedConfig as ToJsonConfig;
     }
 
-    test("sets versionKey to false", () => {
+    it("sets versionKey to false", () => {
         const config = applyPlugin();
         expect(config.versionKey).toBe(false);
     });
 
-    test("maps _id to id", () => {
+    it("maps _id to id", () => {
         const { transform } = applyPlugin();
         const ret: Record<string, unknown> = { _id: { toHexString: () => "abc123" }, name: "test" };
         transform({}, ret);
         expect(ret["id"]).toBe("abc123");
     });
 
-    test("removes _id from output", () => {
+    it("removes _id from output", () => {
         const { transform } = applyPlugin();
         const ret: Record<string, unknown> = { _id: { toHexString: () => "abc123" } };
         transform({}, ret);
         expect(ret["_id"]).toBeUndefined();
     });
 
-    test("preserves other fields", () => {
+    it("preserves other fields", () => {
         const { transform } = applyPlugin();
         const ret: Record<string, unknown> = {
             _id: { toHexString: () => "abc123" },
