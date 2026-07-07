@@ -1,11 +1,11 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { pinoHttp } from "pino-http";
-import { randomUUID } from "crypto";
 import router from "./router.js";
 import cors from "cors";
 import { errorGenericHandler } from "./middleware/errorMiddleware.js";
 import { notFound } from "./middleware/notFoundMiddleware.js";
+import { requestIdMiddleware } from "./middleware/requestIdMiddleware.js";
 import helmet from "helmet";
 import {
     CORS_ALLOWED_ORIGINS,
@@ -19,12 +19,13 @@ import type { Request } from "express";
 const app = express();
 
 app.use(helmet());
+app.use(requestIdMiddleware);
 
 if (NODE_ENV !== "test") {
     app.use(
         pinoHttp({
             logger,
-            genReqId: (req: Request) => req.headers["x-request-id"] ?? randomUUID(),
+            genReqId: (req: Request) => req.id,
             customSuccessMessage: () => "request completed",
             customErrorMessage: () => "request failed",
             serializers: {

@@ -1,36 +1,19 @@
 # Node.js Express TypeScript API Starter
 
-A production-minded **TypeScript REST API starter** built with **Express 5**, **MongoDB**, JWT auth, validation, tests, and practical defaults for service-oriented backends.
+A clean Express 5 + TypeScript starter for building REST APIs with MongoDB, JWT auth, validation, logging, Docker, and tests.
+
+It includes a small auth flow and product module to show the project structure, validation, service/repository split, protected writes, cursor pagination, and seed data.
 
 ## Features
 
-- **TypeScript (ESM)** — strict runtime code compiled to `dist/`
-- **Express 5** — HTTP API and middleware
-- **JWT** — token-based auth
-- **Zod** — type-safe request and environment validation
-- **Vitest** — unit and API tests next to each feature
-- **ESLint & Prettier** — enforced style and static checks
-- **Husky** — `npm run validate` on pre-commit
-- **Security** — Helmet, CORS, rate limiting, per-route auth limits
-- **Structured logging** — Pino (JSON in production, pretty-printed in development)
-- **Health** — monitoring endpoint
-- **CI/CD** — GitHub Actions validates, tests, and builds the Docker image on `main`
-
-## Architecture highlights
-
-- **Feature modules** keep routes, controllers, services, repositories, models, validation, and tests together.
-- **Service/repository separation** keeps business rules out of persistence code and hides Mongoose details from services.
-- **Zod contracts** validate environment variables, request bodies, route params, and query strings.
-- **Centralized errors and responses** keep success and failure payloads predictable.
-- **Cursor pagination** avoids `skip`-based pagination costs on growing collections.
-
-## Production-minded decisions
-
-- Environment configuration is validated at startup and fails fast when required values are missing.
-- The Docker image uses a multi-stage build and runs as a non-root user.
-- Security middleware includes Helmet, CORS controls, request rate limiting, auth-route rate limiting, and JWT bearer auth.
-- Logs use Pino: pretty in development, JSON in production.
-- CI runs formatting/lint checks, TypeScript typecheck, Vitest coverage, and Docker image build.
+- **TypeScript + Express 5** — ESM setup with strict type checks.
+- **Validation** — Zod schemas for config, params, query strings, and request bodies.
+- **Auth** — JWT signup/login flow with protected product writes.
+- **MongoDB** — Mongoose models, cursor pagination, filters, and seed data.
+- **Structure** — Feature-based modules with controller, service, repository, validation, and tests.
+- **Security basics** — Helmet, CORS, rate limiting, and auth-specific limits.
+- **Logging** — Pino logs with `x-request-id` correlation.
+- **Workflow** — Vitest, coverage, ESLint, Prettier, Husky, Docker Compose, and GitHub Actions.
 
 ## Requirements
 
@@ -97,36 +80,70 @@ Copy `.env.example` to `.env`. In non-production, variables are loaded with `dot
 | `RATE_LIMIT_MAX`            | No       | Max **HTTP requests per IP** allowed inside that window. Must be configured together with `RATE_LIMIT_WINDOW_MINUTES`. |
 | `LOG_LEVEL`                 | No       | Pino log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` (default `info`).                                   |
 
+## Request tracing
+
+Requests include a correlation ID for logs:
+
+- Send `x-request-id` to propagate an ID from a client, gateway, or upstream service.
+- If the header is omitted, the API generates a UUID automatically.
+- The same value is always returned in the response `x-request-id` header.
+- Pino HTTP logging uses that ID as `req.id`, so all request logs for a single call share the same identifier.
+
 ## API Endpoints
 
-### Auth flow and protected product routes
+| Method   | Endpoint           | Auth required | Description                                       |
+| -------- | ------------------ | ------------- | ------------------------------------------------- |
+| `GET`    | `/`                | No            | Basic API status check.                           |
+| `GET`    | `/v1/health`       | No            | Health check with database status.                |
+| `POST`   | `/v1/auth/signup`  | No            | Register a user and return a JWT.                 |
+| `POST`   | `/v1/auth/login`   | No            | Authenticate a user and return a JWT.             |
+| `GET`    | `/v1/products`     | No            | List products with cursor pagination and filters. |
+| `GET`    | `/v1/products/:id` | No            | Get a product by ID.                              |
+| `POST`   | `/v1/products`     | Yes           | Create a product.                                 |
+| `PUT`    | `/v1/products/:id` | Yes           | Update a product.                                 |
+| `DELETE` | `/v1/products/:id` | Yes           | Delete a product if it is not active.             |
 
-The **`auth`** feature is a minimal **register + login** flow: both endpoints return a **JWT**. The **`product`** example uses that token as **Bearer** auth on writes only: **create, update, and delete** require `Authorization: Bearer <jwt>`; **list** and **get by id** stay open (no token).
+Protected product routes expect `Authorization: Bearer <jwt>`. List and get-by-id stay public.
 
-### Root
+## API Examples
 
-- `GET /` — `{ "status": "running" }`
+Main flow with `curl` (assumes the API on `http://localhost:3000`):
 
-### Health
+The login example uses `jq` to extract the JWT.
 
-- `GET /v1/health` — uptime-style payload
+```bash
+# Sign up
+curl -s -X POST http://localhost:3000/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"DemoPassword123!"}'
 
-### Auth
+# Log in and save the JWT
+TOKEN=$(curl -s -X POST http://localhost:3000/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"DemoPassword123!"}' \
+  | jq -r '.data')
 
-- `POST /v1/auth/signup` — register (returns JWT)
-- `POST /v1/auth/login` — login (returns JWT)
+# Create a product
+curl -s -X POST http://localhost:3000/v1/products \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"name":"Starter Tee","price":29.99,"stock":50,"status":"draft"}'
 
-### Products (reference module)
+# List active featured products
+curl -s "http://localhost:3000/v1/products?status=active&isFeatured=true"
 
-The product feature is intentionally small: it exists as a reference module for validation, auth-protected writes, service/repository/model separation, cursor pagination, simple filters, and feature-level tests. Products include `price`, `stock`, `status` (`draft`, `active`, `archived`), and `isFeatured`.
+# Update a product (archive before delete if it was active)
+curl -s -X PUT http://localhost:3000/v1/products/PRODUCT_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"status":"archived"}'
 
-- `GET /v1/products` — list (`cursor`, `limit`, `status`, `isFeatured` query params); public
-- `GET /v1/products/:id` — get by id; public
-- `POST /v1/products` — create; **JWT required**
-- `PUT /v1/products/:id` — update; **JWT required**
-- `DELETE /v1/products/:id` — delete; **JWT required**
+# Delete a product
+curl -s -X DELETE http://localhost:3000/v1/products/PRODUCT_ID \
+  -H "Authorization: Bearer $TOKEN"
+```
 
-Active products must be archived before deletion. This keeps the example domain small while still showing where service-level business rules belong.
+Replace `PRODUCT_ID` with a MongoDB ObjectId from a create or list response.
 
 ## Docker
 
@@ -146,11 +163,11 @@ cp .env.example .env
 docker compose up --build
 ```
 
-The Compose setup starts the production API image plus a local MongoDB container by default. A `.env` file is optional for Compose; Docker Compose reads it for variable substitution when present, but the compose file also provides safe local defaults. Inside Compose, `COMPOSE_MONGODB_URI` controls the API container database connection and defaults to `mongodb://mongo:27017/api_starter`, because `localhost` inside the API container would point to the API container itself, not MongoDB.
+Docker Compose starts the API and a local MongoDB container. By default, the API connects to `mongodb://mongo:27017/api_starter` inside the Compose network.
 
 Compose uses `JWT_SECRET` when provided, otherwise it falls back to a demo-only secret long enough to satisfy startup validation. Replace it for real environments.
 
-To use MongoDB Atlas or another remote MongoDB with Compose, set only `COMPOSE_MONGODB_URI` in your `.env`; no change to `docker-compose.yml` is required.
+To use MongoDB Atlas or another remote MongoDB, set `COMPOSE_MONGODB_URI` in `.env`; no change to `docker-compose.yml` is required.
 
 ```env
 COMPOSE_MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>
@@ -213,7 +230,7 @@ Stack traces are included in non-production environments only and never exposed 
 
 Features live under `src/api/<feature>/` and are wired in `src/router.ts`.
 
-Use `src/api/product/` as the intentionally small reference module for CRUD routes, Zod validation, auth middleware, service/repository/model separation, cursor pagination, filtering, simple service-level rules, and feature-level tests.
+Use `src/api/product/` as the reference module for CRUD routes, Zod validation, protected writes, service/repository/model separation, pagination, filters, and tests.
 
 Architecture decisions, layer responsibilities, and coding conventions are documented in [ARCHITECTURE.md](./ARCHITECTURE.md), including the full project structure and layer flow.
 
@@ -243,7 +260,7 @@ Husky runs `npm run validate` automatically on each commit to keep lint and form
 
 ## Trade-offs
 
-This is a starter, not a full product. The `product` module is intentionally small but not empty: it demonstrates validation, auth-protected writes, repository-backed persistence, cursor pagination, filters, defaults, and one service-level rule (`active` products must be archived before deletion). Business-heavy modules such as payments, orders, subscriptions, or multi-tenant workflows belong in downstream applications built from this starter.
+This is a starter, not a full product. The `product` module is intentionally small but not empty: it covers validation, auth-protected writes, repository-backed persistence, cursor pagination, filters, defaults, and one service-level rule (`active` products must be archived before deletion). Business-heavy modules such as payments, orders, subscriptions, or multi-tenant workflows belong in downstream applications built from this starter.
 
 ## License
 
