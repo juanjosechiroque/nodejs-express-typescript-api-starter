@@ -134,7 +134,7 @@ JWT errors distinguish between `TOKEN_EXPIRED` and `INVALID_TOKEN` so clients ca
 
 ## Authentication
 
-Protected routes use the `authenticate` middleware, which validates `Authorization: Bearer <token>` and attaches the decoded payload to `req.user`.
+Protected routes use the `authenticate` middleware, which validates `Authorization: Bearer <token>` and attaches the decoded payload to `req.user`. JWT tokens are signed and verified with HS256 explicitly configured.
 
 Public and protected routes are declared explicitly in each router — no global auth applied by default.
 

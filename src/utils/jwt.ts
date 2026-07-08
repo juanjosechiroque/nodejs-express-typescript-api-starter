@@ -12,12 +12,13 @@ export type JwtPayload = {
 export const generateToken = (payload: JwtPayload): string => {
     return sign(payload, JWT_SECRET, {
         expiresIn: JWT_EXPIRATION_TIME as NonNullable<jwt.SignOptions["expiresIn"]>,
+        algorithm: "HS256",
     });
 };
 
 export const verifyToken = (token: string): JwtPayload => {
     try {
-        return verify(token, JWT_SECRET) as JwtPayload;
+        return verify(token, JWT_SECRET, { algorithms: ["HS256"] }) as JwtPayload;
     } catch (err) {
         if (err instanceof TokenExpiredError) {
             throw UnauthorizedError("Token expired", "TOKEN_EXPIRED");
