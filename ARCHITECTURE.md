@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the structure, conventions, and design decisions behind this project. It is intended for contributors and anyone evaluating the codebase.
+This document explains how the project is organized and how to extend it without breaking the existing conventions.
 
 ## Stack
 
@@ -56,9 +56,9 @@ Support modules without HTTP endpoints omit `router` and `controller` until rout
 
 ## Feature scope
 
-The public auth API only includes signup and login so the starter can issue JWTs for protected routes without becoming a full user-management system. The `user` module remains internal support for credentials, password hashing, and lookup by email.
+Auth only exposes signup and login. That is enough for the starter to issue JWTs and protect routes without turning the user module into a full account-management feature. The user module stays internal and handles credentials, password hashing, user status, and email lookup.
 
-The `product` module is the reference feature: public reads, protected writes, Zod validation, service/repository/model separation, cursor pagination, filters, defaults, and one service-level rule for archived-before-delete behavior.
+The product module is the main example feature. It includes public reads, protected writes, Zod validation, service/repository/model separation, cursor pagination, filters, defaults, and the archived-before-delete rule.
 
 ## Layer responsibilities and data flow
 
@@ -116,7 +116,7 @@ Stack traces and internal error details are never exposed in production.
 
 ## API contract
 
-The public HTTP contract is documented in `openapi.yaml`. Keep it aligned when routes, validation schemas, or response shapes change.
+API details live in `openapi.yaml`. Update it when routes, validation schemas, or response shapes change.
 
 ## Error handling
 
@@ -134,9 +134,9 @@ JWT errors distinguish between `TOKEN_EXPIRED` and `INVALID_TOKEN` so clients ca
 
 ## Authentication
 
-Protected routes use the `authenticate` middleware, which validates `Authorization: Bearer <token>` and attaches the decoded payload to `req.user`. JWT tokens are signed and verified with HS256 explicitly configured.
+Protected routes use `authenticate`. It validates `Authorization: Bearer <token>`, verifies the JWT with HS256, checks that the user still exists and is active, and then attaches the decoded payload to `req.user`.
 
-JWTs are stateless, but protected routes also verify that the token subject still maps to an active user. This allows access to be disabled by changing user status without adding token blacklists, refresh-token storage, or session tracking.
+JWTs are still stateless. The active-user check gives the API a simple way to disable access after a user is deactivated, without adding token blacklists, refresh-token storage, or session tracking.
 
 Public and protected routes are declared explicitly in each router — no global auth applied by default.
 
@@ -148,15 +148,17 @@ All environment variables are declared and validated at startup with Zod in `src
 
 ## Logging
 
-Structured JSON logging via [Pino](https://getpino.io). Import `src/utils/logger.ts` and use `logger.info()` / `logger.error()` — never `console.log`. In development, `pino-pretty` formats output automatically. In production, raw JSON goes to stdout for log aggregators. HTTP request logging (method, URL, status, response time) is handled by `pino-http` middleware. `LOG_LEVEL` controls verbosity (default: `info`).
+Logging uses [Pino](https://getpino.io). Use `src/utils/logger.ts` instead of `console.log`.
+
+In development, `pino-pretty` formats the output. In production, logs are written as JSON to stdout. HTTP request logs are handled by `pino-http` and include method, URL, status, response time, and request ID. `LOG_LEVEL` controls verbosity (default: `info`).
 
 ## Pagination
 
-List endpoints use cursor-based pagination over `_id`. MongoDB ObjectIds are monotonically increasing and carry a primary index, so `{ _id: { $gt: cursor } }` is always an O(log n) index range scan — unlike `skip`, which degrades linearly with collection size. It also prevents phantom reads when documents are inserted between pages.
+List endpoints use cursor pagination over `_id` instead of `skip`. This keeps pagination stable when new documents are inserted and avoids scanning through all previous pages.
 
-The trade-off is that arbitrary page jumps and result totals are not supported. For admin panels or reporting use cases, swap the repository implementation to `skip` + `countDocuments`.
+The trade-off is that arbitrary page jumps and total counts are not included by default. For admin or reporting screens, the repository can be changed to use `skip` + `countDocuments`.
 
-The compound index `{ status: 1, isFeatured: 1, _id: 1 }` on the product collection follows the MongoDB ESR rule (Equality → Sort/Range): equality filters on `status` and `isFeatured` come first, then `_id` covers both the sort and the cursor range condition in a single index scan. Without it, MongoDB would use a single-field index and scan the remaining results in memory.
+The product collection has a compound index on `{ status: 1, isFeatured: 1, _id: 1 }`. This supports the common list query: filter by `status`/`isFeatured` and continue from the cursor.
 
 ## Testing approach
 

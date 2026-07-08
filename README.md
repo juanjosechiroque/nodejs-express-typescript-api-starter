@@ -1,8 +1,8 @@
 # Node.js Express TypeScript API Starter
 
-A clean Express 5 + TypeScript starter for building REST APIs with MongoDB, JWT auth, validation, logging, Docker, and tests.
+An Express 5 + TypeScript starter for REST APIs with MongoDB, JWT auth, Zod validation, structured logging, Docker, and tests.
 
-It includes a small auth flow and product module to show the project structure, validation, service/repository split, protected writes, cursor pagination, and seed data.
+It includes a small auth flow and a product module that show how routes, validation, auth, persistence, pagination, seed data, and tests fit together.
 
 ## Features
 
@@ -91,7 +91,7 @@ Requests include a correlation ID for logs:
 
 ## API Endpoints
 
-The HTTP contract is documented in [openapi.yaml](./openapi.yaml).
+API details are available in [openapi.yaml](./openapi.yaml).
 
 | Method   | Endpoint           | Auth required | Description                                       |
 | -------- | ------------------ | ------------- | ------------------------------------------------- |
@@ -234,7 +234,7 @@ Features live under `src/api/<feature>/` and are wired in `src/router.ts`.
 
 Use `src/api/product/` as the reference module for CRUD routes, Zod validation, protected writes, service/repository/model separation, pagination, filters, and tests.
 
-Architecture decisions, layer responsibilities, and coding conventions are documented in [ARCHITECTURE.md](./ARCHITECTURE.md), including the full project structure and layer flow.
+Layer responsibilities and coding conventions are in [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### AI-assisted development
 
@@ -246,7 +246,7 @@ This project includes configuration files for AI coding assistants:
 | OpenAI Codex | [`AGENTS.md`](./AGENTS.md)           |
 | Cursor       | [`.cursor/rules/`](./.cursor/rules/) |
 
-Each file points to `ARCHITECTURE.md` as the source of truth so any AI assistant follows the same conventions when generating or modifying code.
+These files point to [ARCHITECTURE.md](./ARCHITECTURE.md) so generated changes follow the same project conventions.
 
 ## Testing
 
@@ -262,7 +262,9 @@ Husky runs `npm run validate` automatically on each commit to keep lint and form
 
 ## Trade-offs
 
-This is a starter, not a full product. The `product` module is intentionally small but not empty: it covers validation, auth-protected writes, repository-backed persistence, cursor pagination, filters, defaults, and one service-level rule (`active` products must be archived before deletion). Business-heavy modules such as payments, orders, subscriptions, or multi-tenant workflows belong in downstream applications built from this starter.
+This starter keeps the example domain small on purpose. The product module is enough to show validation, protected writes, repository-backed persistence, cursor pagination, filters, defaults, and one service-level rule: active products must be archived before deletion.
+
+Use it as a base and add your own domain modules under `src/api/`.
 
 ## License
 
