@@ -60,6 +60,8 @@ Auth only exposes signup and login. That is enough for the starter to issue JWTs
 
 The product module is the main example feature. It includes public reads, protected writes, Zod validation, service/repository/model separation, cursor pagination, filters, defaults, and the archived-before-delete rule.
 
+Product write routes require authentication, but they do not enforce ownership or roles. Add those checks in the service layer when the application domain needs them.
+
 ## Layer responsibilities and data flow
 
 ```

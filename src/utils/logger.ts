@@ -2,8 +2,9 @@ import pino from "pino";
 import { LOG_LEVEL, NODE_ENV } from "../config.js";
 
 const logger = pino({
+    enabled: NODE_ENV !== "test",
     level: LOG_LEVEL,
-    ...(NODE_ENV !== "production" && {
+    ...(NODE_ENV === "development" && {
         transport: {
             target: "pino-pretty",
             options: {
