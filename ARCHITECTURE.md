@@ -178,6 +178,8 @@ The Dockerfile uses a two-stage build:
 
 This keeps the final image minimal and avoids running as root in production.
 
+The server handles `SIGTERM` and `SIGINT` in `index.ts`. It stops accepting new HTTP connections, waits for active requests to finish, closes MongoDB, and exits. A 10-second timeout forces the process to stop if shutdown does not complete.
+
 ## Adding a new feature
 
 1. Create `src/api/{feature}/` with the files listed in the feature module pattern above

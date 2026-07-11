@@ -14,13 +14,36 @@ server.on("error", (err: Error) => {
     process.exit(1);
 });
 
+let shuttingDown = false;
+
 async function shutdown(signal: NodeJS.Signals) {
     logger.info({ signal }, "Shutdown initiated");
-    await new Promise<void>((resolve, reject) => {
-        server.close((closeErr) => (closeErr ? reject(closeErr) : resolve()));
-    });
-    await disconnectDB();
-    process.exit(0);
+
+    if (shuttingDown) return;
+    shuttingDown = true;
+
+    let exitCode = 0;
+    const forceShutdownTimer = setTimeout(() => {
+        logger.error("Forced shutdown after timeout");
+        process.exit(1);
+    }, 10_000);
+
+    forceShutdownTimer.unref();
+
+    try {
+        await new Promise<void>((resolve, reject) => {
+            server.close((closeErr) => (closeErr ? reject(closeErr) : resolve()));
+        });
+    } catch (error) {
+        exitCode = 1;
+        logger.error({ err: error }, "HTTP server failed to close cleanly");
+    } finally {
+        await disconnectDB();
+        clearTimeout(forceShutdownTimer);
+    }
+
+    logger.info({ exitCode }, "Shutdown completed");
+    process.exit(exitCode);
 }
 
 process.on("SIGTERM", () => {
