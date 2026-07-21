@@ -21,7 +21,7 @@ const router = Router();
 router.get("/", validateQuery(listProductsQuerySchema), asyncHandler(getProductsHandler));
 router.get("/:id", validateParams(productIdParamSchema), asyncHandler(getProductByIdHandler));
 router.post("/", authenticate, validate(createProductSchema), asyncHandler(createProductHandler));
-router.put(
+router.patch(
     "/:id",
     authenticate,
     validateParams(productIdParamSchema),

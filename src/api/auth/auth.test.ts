@@ -71,6 +71,15 @@ describe("POST /v1/auth/signup", () => {
         expect(response.status).toBe(400);
         expect(response.body.message).toMatch(/8 characters|length|Validation/i);
     });
+
+    it("counts multibyte characters against bcrypt's 72-byte input limit", async () => {
+        const response = await api
+            .post(`${V1}/auth/signup`)
+            .send({ email: "test@example.com", password: "🔒".repeat(19) });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Validation failed");
+    });
 });
 
 describe("POST /v1/auth/login", () => {

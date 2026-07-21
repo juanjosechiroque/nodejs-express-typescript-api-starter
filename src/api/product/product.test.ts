@@ -71,6 +71,21 @@ describe("GET /v1/products", () => {
         });
     });
 
+    it("parses isFeatured=false without coercing it to true", async () => {
+        mockMongoose.model("Product").find.mockReturnValueOnce(makeFindChain([]));
+
+        const response = await api.get(`${V1}/products?isFeatured=false`);
+
+        expect(response.status).toBe(200);
+        expect(mockMongoose.model("Product").find).toHaveBeenCalledWith({ isFeatured: false });
+    });
+
+    it("returns 400 when isFeatured is not a boolean", async () => {
+        const response = await api.get(`${V1}/products?isFeatured=not-a-boolean`);
+
+        expect(response.status).toBe(400);
+    });
+
     it("returns 400 when the cursor format is invalid", async () => {
         const response = await api.get(`${V1}/products?cursor=invalid`);
         expect(response.status).toBe(400);
@@ -179,6 +194,16 @@ describe("POST /v1/products", () => {
         expect(response.status).toBe(400);
     });
 
+    it("returns 400 when product fields exceed their limits", async () => {
+        const response = await api
+            .post(`${V1}/products`)
+            .set("Authorization", "Bearer valid-token")
+            .send({ name: "x".repeat(121), price: 10, description: "x".repeat(2001) });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("message", "Validation failed");
+    });
+
     it("returns 401 when the Authorization header is malformed", async () => {
         const response = await api.post(`${V1}/products`).set("Authorization", "random token");
 
@@ -215,7 +240,7 @@ describe("POST /v1/products", () => {
     });
 });
 
-describe("PUT /v1/products/:id", () => {
+describe("PATCH /v1/products/:id", () => {
     it("returns the updated product", async () => {
         const data = { name: "updated", price: 20, stock: 12, status: "archived" };
         mockMongoose
@@ -223,7 +248,7 @@ describe("PUT /v1/products/:id", () => {
             .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(data) });
 
         const response = await api
-            .put(`${V1}/products/${validMongoId}`)
+            .patch(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token")
             .send(data);
 
@@ -233,7 +258,7 @@ describe("PUT /v1/products/:id", () => {
 
     it("returns 400 when the request body is empty", async () => {
         const response = await api
-            .put(`${V1}/products/${validMongoId}`)
+            .patch(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token");
 
         expect(response.status).toBe(400);
@@ -242,7 +267,7 @@ describe("PUT /v1/products/:id", () => {
 
     it("returns 400 when the id is not a valid MongoDB ObjectId", async () => {
         const response = await api
-            .put(`${V1}/products/invalid-id`)
+            .patch(`${V1}/products/invalid-id`)
             .set("Authorization", "Bearer valid-token")
             .send({ name: "updated", price: 20 });
 
@@ -256,7 +281,7 @@ describe("PUT /v1/products/:id", () => {
             .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(null) });
 
         const response = await api
-            .put(`${V1}/products/${validMongoId}`)
+            .patch(`${V1}/products/${validMongoId}`)
             .set("Authorization", "Bearer valid-token")
             .send({ name: "updated", price: 20 });
 

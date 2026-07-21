@@ -102,7 +102,7 @@ API details are available in [openapi.yaml](./openapi.yaml).
 | `GET`    | `/v1/products`     | No            | List products with cursor pagination and filters. |
 | `GET`    | `/v1/products/:id` | No            | Get a product by ID.                              |
 | `POST`   | `/v1/products`     | Yes           | Create a product.                                 |
-| `PUT`    | `/v1/products/:id` | Yes           | Update a product.                                 |
+| `PATCH`  | `/v1/products/:id` | Yes           | Partially update a product.                       |
 | `DELETE` | `/v1/products/:id` | Yes           | Delete a product if it is not active.             |
 
 Protected product routes expect `Authorization: Bearer <jwt>`. List and get-by-id stay public.
@@ -135,7 +135,7 @@ curl -s -X POST http://localhost:3000/v1/products \
 curl -s "http://localhost:3000/v1/products?status=active&isFeatured=true"
 
 # Update a product (archive before delete if it was active)
-curl -s -X PUT http://localhost:3000/v1/products/PRODUCT_ID \
+curl -s -X PATCH http://localhost:3000/v1/products/PRODUCT_ID \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"status":"archived"}'

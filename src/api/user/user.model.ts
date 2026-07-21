@@ -4,8 +4,15 @@ import { applyBaseToJsonTransform } from "../../utils/toJSONPlugin.js";
 
 const userSchema = new Schema(
     {
-        email: { type: String, required: true, unique: true, lowercase: true },
-        password: { type: String, required: true },
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+            maxlength: 254,
+        },
+        password: { type: String, required: true, maxlength: 72 },
         status: {
             type: String,
             enum: ["active", "disabled"],

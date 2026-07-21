@@ -199,8 +199,8 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "404":
                     $ref: "#/components/responses/NotFound"
-        put:
-            summary: Update a product
+        patch:
+            summary: Partially update a product
             operationId: updateProduct
             security:
                 - bearerAuth: []
@@ -352,9 +352,11 @@ components:
                 email:
                     type: string
                     format: email
+                    maxLength: 254
                 password:
                     type: string
                     minLength: 8
+                    maxLength: 72
 
         AuthResponse:
             type: object
@@ -380,13 +382,19 @@ components:
                     description: MongoDB ObjectId
                 name:
                     type: string
+                    minLength: 1
+                    maxLength: 120
                 description:
                     type: string
+                    maxLength: 2000
                 price:
                     type: number
+                    exclusiveMinimum: 0
+                    maximum: 999999999
                 stock:
                     type: integer
                     minimum: 0
+                    maximum: 1000000000
                 status:
                     $ref: "#/components/schemas/ProductStatus"
                 isFeatured:
@@ -404,14 +412,19 @@ components:
             properties:
                 name:
                     type: string
+                    minLength: 1
+                    maxLength: 120
                 description:
                     type: string
+                    maxLength: 2000
                 price:
                     type: number
                     exclusiveMinimum: 0
+                    maximum: 999999999
                 stock:
                     type: integer
                     minimum: 0
+                    maximum: 1000000000
                     default: 0
                 status:
                     $ref: "#/components/schemas/ProductStatus"
@@ -426,14 +439,19 @@ components:
             properties:
                 name:
                     type: string
+                    minLength: 1
+                    maxLength: 120
                 description:
                     type: string
+                    maxLength: 2000
                 price:
                     type: number
                     exclusiveMinimum: 0
+                    maximum: 999999999
                 stock:
                     type: integer
                     minimum: 0
+                    maximum: 1000000000
                 status:
                     $ref: "#/components/schemas/ProductStatus"
                 isFeatured:

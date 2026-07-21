@@ -1,10 +1,16 @@
 import { Schema, model, type InferSchemaType } from "mongoose";
+import {
+    PRODUCT_DESCRIPTION_MAX_LENGTH,
+    PRODUCT_NAME_MAX_LENGTH,
+    PRODUCT_PRICE_MAX,
+    PRODUCT_STOCK_MAX,
+} from "./product.constants.js";
 
 const productSchema = new Schema(
     {
-        name: { type: String, required: true },
-        price: { type: Number, required: true },
-        stock: { type: Number, required: true, default: 0, min: 0 },
+        name: { type: String, required: true, trim: true, maxlength: PRODUCT_NAME_MAX_LENGTH },
+        price: { type: Number, required: true, min: Number.MIN_VALUE, max: PRODUCT_PRICE_MAX },
+        stock: { type: Number, required: true, default: 0, min: 0, max: PRODUCT_STOCK_MAX },
         status: {
             type: String,
             enum: ["draft", "active", "archived"],
@@ -13,7 +19,7 @@ const productSchema = new Schema(
             index: true,
         },
         isFeatured: { type: Boolean, required: true, default: false, index: true },
-        description: { type: String },
+        description: { type: String, trim: true, maxlength: PRODUCT_DESCRIPTION_MAX_LENGTH },
     },
     {
         timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

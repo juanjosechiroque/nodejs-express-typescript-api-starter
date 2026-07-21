@@ -35,7 +35,7 @@ export async function findProductById(id: string) {
 }
 
 export async function updateProductById(id: string, update: UpdateProductInput) {
-    return await Product.findByIdAndUpdate(id, update, { new: true }).lean();
+    return await Product.findByIdAndUpdate(id, update, { new: true, runValidators: true }).lean();
 }
 
 export async function deleteProductIfNotActive(productId: string) {
