@@ -9,6 +9,20 @@ describe("GET /", () => {
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ status: "running" });
     });
+
+    it("includes security headers", async () => {
+        const response = await api.get("/");
+
+        expect(response.headers["x-content-type-options"]).toBe("nosniff");
+        expect(response.headers["x-frame-options"]).toBe("SAMEORIGIN");
+        expect(response.headers).toHaveProperty("content-security-policy");
+    });
+
+    it("rejects JSON request bodies larger than 10kb", async () => {
+        const response = await api.post("/unknown-route").send({ payload: "x".repeat(11 * 1024) });
+
+        expect(response.status).toBe(413);
+    });
 });
 
 describe("GET /v1/health", () => {

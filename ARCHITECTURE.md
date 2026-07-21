@@ -132,7 +132,7 @@ throw NotFoundError("Product not found");
 
 Errors propagate to `errorGenericHandler` via `next(err)` or through `asyncHandler`, which catches promise rejections automatically.
 
-JWT errors distinguish between `TOKEN_EXPIRED` and `INVALID_TOKEN` so clients can handle refresh flows correctly.
+JWT errors distinguish between `TOKEN_EXPIRED` and `INVALID_TOKEN` so clients can prompt for re-authentication appropriately.
 
 ## Authentication
 
@@ -140,11 +140,24 @@ Protected routes use `authenticate`. It validates `Authorization: Bearer <token>
 
 JWTs are still stateless. The active-user check gives the API a simple way to disable access after a user is deactivated, without adding token blacklists, refresh-token storage, or session tracking.
 
+Refresh tokens, token rotation, revocation lists, password reset, email verification, MFA, and account recovery are intentionally out of scope. These features require complete storage, rotation, reuse-detection, expiry, revocation, and recovery policies; applications should not add a partial refresh-token flow.
+
 Public and protected routes are declared explicitly in each router — no global auth applied by default.
 
 Auth endpoints (`/signup`, `/login`) apply a fixed rate limit (10 requests per 15 minutes per IP). This is intentionally not configurable — it is a security control, not an operational parameter.
 
 Both the authentication limiter and the optional global limiter use in-memory counters by default. This keeps local setup dependency-free, but counters are isolated per process and reset on restart. Multi-instance production deployments must configure a shared rate-limit store, such as Redis, to enforce limits consistently across replicas.
+
+## Operational security
+
+- Express accepts JSON bodies up to 10kb.
+- Helmet applies HTTP security headers before application routes.
+- CORS is opt-in and should use an explicit production allowlist.
+- Pino redacts common password, token, authorization, and cookie paths as defense in depth. Callers must still log allowlisted fields instead of arbitrary request bodies.
+- Production error responses hide internal messages and stack traces.
+- The Docker production stage runs as the non-root `appuser`.
+- Secrets are validated at startup and must be supplied by the runtime environment; Docker Compose does not provide a fallback JWT secret.
+- Dependabot proposes dependency updates and CI rejects high or critical npm audit findings.
 
 ## Environment configuration
 

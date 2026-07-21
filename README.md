@@ -39,8 +39,11 @@ It includes a small auth flow and a product module that show how routes, validat
 
     ```bash
     cp .env.example .env
-    # Edit .env using .env.example as reference.
+    # Generate a local JWT secret and add it to .env:
+    openssl rand -base64 48
     ```
+
+    Edit `.env` using `.env.example` as reference. Never commit the generated secret.
 
 4. **Start the development server**
 
@@ -87,6 +90,23 @@ Copy `.env.example` to `.env`. In non-production, variables are loaded with `dot
 The default rate limiter stores counters in the application process. This is suitable for local development and single-instance deployments, but it does not enforce a global limit across multiple API instances. Counters are also reset whenever an instance restarts.
 
 For a horizontally scaled production deployment, configure `express-rate-limit` with a shared store such as Redis. The global and authentication-specific limiters must use the same shared infrastructure if their limits need to apply consistently across all instances.
+
+## Security defaults and production responsibilities
+
+The starter provides secure defaults without claiming to be a complete security program:
+
+- JSON request bodies are limited to 10kb to reduce accidental or abusive memory consumption.
+- Helmet sets common HTTP security headers, including content type, framing, and content security protections.
+- CORS is disabled unless `CORS_ALLOWED_ORIGINS` is configured. Prefer an explicit allowlist in production; `*` should only be used when the API is intentionally public and does not rely on browser credentials.
+- Authentication endpoints allow 10 attempts per 15 minutes per IP. An optional global limiter can be configured with `RATE_LIMIT_WINDOW_MINUTES` and `RATE_LIMIT_MAX`.
+- Structured logs redact common password, token, authorization, and cookie fields. Application code must still avoid logging complete request bodies or arbitrary secret-bearing objects.
+- Production errors hide stack traces and internal messages.
+- The production container runs as a non-root user.
+- Dependabot monitors npm, Docker, and GitHub Actions dependencies. CI fails when `npm audit` reports a high or critical vulnerability.
+
+Access tokens are short-lived JWTs. Refresh tokens, session management, token rotation, revocation lists, password reset, email verification, MFA, and account recovery are intentionally outside this starter's scope. Applications that need those capabilities should implement them as a complete threat-modeled flow rather than adding a partial refresh endpoint.
+
+Secrets must come from the deployment platform's secret manager or protected environment variables. Generate development secrets with `openssl rand -base64 48`; never reuse example values, bake secrets into an image, include them in logs, or commit `.env` files. Rotate a secret immediately if it may have been exposed.
 
 ## Request tracing
 
@@ -179,7 +199,7 @@ Docker Compose starts the API and a local MongoDB container. By default, the API
 
 Both containers expose health checks. MongoDB is checked with `db.adminCommand('ping')`, while the API checks `/v1/health`. Compose waits for MongoDB to become healthy before starting the API.
 
-Compose uses `JWT_SECRET` when provided, otherwise it falls back to a demo-only secret long enough to satisfy startup validation. Replace it for real environments.
+Compose requires `JWT_SECRET` to be set in `.env` and refuses to start without it. This avoids silently running the production-mode container with a known example secret.
 
 To use MongoDB Atlas or another remote MongoDB, set `COMPOSE_MONGODB_URI` in `.env`; no change to `docker-compose.yml` is required.
 

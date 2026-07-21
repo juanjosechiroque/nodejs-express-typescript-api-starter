@@ -19,9 +19,9 @@ env:
 
 jobs:
     build-and-deploy:
-        name: Build, validate, and test
+        name: Validate, test, and build
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 15
         steps:
             - name: Checkout code
               uses: actions/checkout@v7
@@ -35,11 +35,17 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Audit dependencies
+              run: npm audit --audit-level=high
+
             - name: Lint and format check
               run: npm run validate
 
             - name: Typecheck
               run: npm run typecheck
+
+            - name: Build application
+              run: npm run build
 
             - name: Run tests with coverage
               run: npm run test:coverage
@@ -57,3 +63,9 @@ jobs:
                   docker buildx build \
                     -t ${{ env.IMAGE_NAME }}:${{ steps.commit.outputs.sha }} \
                     --load .
+
+            - name: Verify non-root container runtime
+              run: |
+                  docker run --rm --entrypoint node \
+                    ${{ env.IMAGE_NAME }}:${{ steps.commit.outputs.sha }} \
+                    -e "if (process.getuid?.() === 0) process.exit(1); console.log('non-root uid:', process.getuid?.())"

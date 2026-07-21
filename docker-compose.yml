@@ -12,7 +12,7 @@ services:
             NODE_ENV: production
             PORT: 3000
             MONGODB_URI: ${COMPOSE_MONGODB_URI:-mongodb://mongo:27017/api_starter}
-            JWT_SECRET: ${JWT_SECRET:-compose_demo_jwt_secret_at_least_32_chars}
+            JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env before starting Docker Compose}
             JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-1h}
             RATE_LIMIT_WINDOW_MINUTES: ${RATE_LIMIT_WINDOW_MINUTES:-1}
             RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-60}
