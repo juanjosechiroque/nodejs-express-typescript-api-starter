@@ -160,7 +160,7 @@ Both the authentication limiter and the optional global limiter use in-memory co
 - Production error responses hide internal messages and stack traces.
 - The Docker production stage runs as the non-root `appuser`.
 - Secrets are validated at startup and must be supplied by the runtime environment; Docker Compose does not provide a fallback JWT secret.
-- Dependabot proposes dependency updates and CI rejects high or critical npm audit findings.
+- CI rejects high or critical npm audit findings.
 
 ## Environment configuration
 

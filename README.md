@@ -102,7 +102,7 @@ The starter provides secure defaults without claiming to be a complete security 
 - Structured logs redact common password, token, authorization, and cookie fields. Application code must still avoid logging complete request bodies or arbitrary secret-bearing objects.
 - Production errors hide stack traces and internal messages.
 - The production container runs as a non-root user.
-- Dependabot monitors npm, Docker, and GitHub Actions dependencies. CI fails when `npm audit` reports a high or critical vulnerability.
+- CI fails when `npm audit` reports a high or critical vulnerability.
 
 Access tokens are short-lived JWTs. Refresh tokens, session management, token rotation, revocation lists, password reset, email verification, MFA, and account recovery are intentionally outside this starter's scope. Applications that need those capabilities should implement them as a complete threat-modeled flow rather than adding a partial refresh endpoint.
 
