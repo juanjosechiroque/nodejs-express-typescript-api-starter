@@ -288,18 +288,20 @@ npm run test:coverage
 
 ## Technical decisions and trade-offs
 
-| Decision                              | Benefit                                                                                            | Cost or limitation                                                                       |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| MongoDB with Mongoose                 | Simple local setup and productive document modeling.                                               | Relational integrity, joins, and cross-document consistency remain application concerns. |
-| Cursor pagination over `_id`          | Stable, indexed pagination without increasingly expensive offsets.                                 | No arbitrary page jumps or total count by default.                                       |
-| JWT with an active-user lookup        | Disabled users lose access without waiting for token expiry.                                       | Every authenticated request depends on a database read.                                  |
-| In-memory rate limiting               | Keeps local development dependency-free.                                                           | Counters are not shared across processes and reset on restart.                           |
-| Mocked HTTP tests plus Testcontainers | Fast feedback with targeted verification against real MongoDB.                                     | Mocks can diverge from Mongoose, while integration tests require Docker and run slower.  |
-| Small Product domain                  | Demonstrates the extension pattern without turning the starter into a sample business application. | Pricing, authorization, and lifecycle rules are intentionally simplified.                |
+| Decision                              | Benefit                                                                                            | Cost or limitation                                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MongoDB with Mongoose                 | Simple local setup and productive document modeling.                                               | Relational integrity, joins, and cross-document consistency remain application concerns.         |
+| Cursor pagination over `_id`          | Stable, indexed pagination without increasingly expensive offsets.                                 | No arbitrary page jumps or total count by default.                                               |
+| JWT with an active-user lookup        | Disabled users lose access without waiting for token expiry.                                       | Every authenticated request depends on a database read.                                          |
+| Authentication without ownership      | Demonstrates JWT-protected write endpoints without adding a full authorization domain.             | Any active user can modify any product; adopting applications must add roles or ownership.       |
+| In-memory rate limiting               | Keeps local development dependency-free.                                                           | Counters are not shared across processes and reset on restart.                                   |
+| Mocked HTTP tests plus Testcontainers | Fast feedback with targeted verification against real MongoDB.                                     | Mocks can diverge from Mongoose, while integration tests require Docker and run slower.          |
+| Docker build without image publishing | CI verifies that the production image builds and runs as non-root.                                 | The adopting project must configure its registry, image repository, credentials, and deployment. |
+| Small Product domain                  | Demonstrates the extension pattern without turning the starter into a sample business application. | Pricing, authorization, and lifecycle rules are intentionally simplified.                        |
 
 ## Known limitations
 
-- Product writes require authentication but do not enforce ownership or roles.
+- Product authentication demonstrates protected endpoints; it is not a complete ownership or role model.
 - `price` uses a JavaScript number for demonstration; real monetary values should use integer minor units plus a currency code.
 - There is no application cache. MongoDB and the active-user lookup are the main pressure points under load.
 - Metrics, distributed tracing, refresh tokens, account recovery, and multi-instance rate limiting are outside the starter's scope.

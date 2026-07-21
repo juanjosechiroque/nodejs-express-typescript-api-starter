@@ -68,7 +68,7 @@ Auth only exposes signup and login. That is enough for the starter to issue JWTs
 
 The product module is the main example feature. It includes public reads, protected writes, Zod validation, service/repository/model separation, cursor pagination, filters, defaults, and the archived-before-delete rule.
 
-Product write routes require authentication, but they do not enforce ownership or roles. Add those checks in the service layer when the application domain needs them.
+Product write routes require authentication to demonstrate how endpoints are protected. Authentication proves who the caller is; it does not decide which products that caller may change. Add ownership or role checks in the service layer when the adopting domain requires them.
 
 Product `price` is a JavaScript number to keep the example compact. Applications that perform monetary calculations should store integer minor units with an explicit currency code; use Decimal128 only when the domain requires variable precision.
 
@@ -215,6 +215,8 @@ The Dockerfile uses a two-stage build:
 2. **production** — copies compiled output and production dependencies, runs as a non-root user (`appuser`)
 
 This keeps the final image minimal and avoids running as root in production.
+
+CI builds and runs the image locally to validate the production artifact, but it does not publish or deploy it. An adopting project should replace `IMAGE_NAME` with its registry repository, authenticate using short-lived CI credentials, push immutable commit tags, and deploy through its own environment-specific workflow.
 
 ## Adding a new feature
 
