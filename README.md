@@ -80,6 +80,12 @@ Copy `.env.example` to `.env`. In non-production, variables are loaded with `dot
 | `RATE_LIMIT_MAX`            | No       | Max **HTTP requests per IP** allowed inside that window. Must be configured together with `RATE_LIMIT_WINDOW_MINUTES`. |
 | `LOG_LEVEL`                 | No       | Pino log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` (default `info`).                                   |
 
+### Rate limiting and horizontal scaling
+
+The default rate limiter stores counters in the application process. This is suitable for local development and single-instance deployments, but it does not enforce a global limit across multiple API instances. Counters are also reset whenever an instance restarts.
+
+For a horizontally scaled production deployment, configure `express-rate-limit` with a shared store such as Redis. The global and authentication-specific limiters must use the same shared infrastructure if their limits need to apply consistently across all instances.
+
 ## Request tracing
 
 Requests include a correlation ID for logs:
@@ -157,6 +163,8 @@ docker run -p 3000:3000 --env-file .env nodejs-express-typescript-api-starter
 ```
 
 The image uses a multi-stage build and runs as a non-root user in production.
+
+The API handles `SIGTERM` and `SIGINT` by stopping new HTTP connections, closing idle keep-alive connections, waiting for active requests, and then disconnecting from MongoDB. A 10-second timeout forces the process to exit if graceful shutdown cannot complete. Docker Compose allows a 15-second grace period before the container is forcibly stopped.
 
 ### Run API + MongoDB with Docker Compose
 

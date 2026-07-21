@@ -144,6 +144,8 @@ Public and protected routes are declared explicitly in each router — no global
 
 Auth endpoints (`/signup`, `/login`) apply a fixed rate limit (10 requests per 15 minutes per IP). This is intentionally not configurable — it is a security control, not an operational parameter.
 
+Both the authentication limiter and the optional global limiter use in-memory counters by default. This keeps local setup dependency-free, but counters are isolated per process and reset on restart. Multi-instance production deployments must configure a shared rate-limit store, such as Redis, to enforce limits consistently across replicas.
+
 ## Environment configuration
 
 All environment variables are declared and validated at startup with Zod in `src/config.ts`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing or invalid. Feature code imports named constants from `config.ts` — never reads `process.env` directly.

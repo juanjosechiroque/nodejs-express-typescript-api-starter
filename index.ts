@@ -9,23 +9,56 @@ const server = app.listen(PORT, () => {
     logger.info({ port: PORT }, "Server started");
 });
 
+const SHUTDOWN_TIMEOUT_MS = 10_000;
+let shutdownPromise: Promise<void> | undefined;
+
 server.on("error", (err: Error) => {
     logger.error({ err }, "Server failed to start");
     process.exit(1);
 });
 
-async function shutdown(signal: NodeJS.Signals) {
+async function shutdown(signal: NodeJS.Signals): Promise<void> {
     logger.info({ signal }, "Shutdown initiated");
-    await new Promise<void>((resolve, reject) => {
-        server.close((closeErr) => (closeErr ? reject(closeErr) : resolve()));
-    });
-    await disconnectDB();
-    process.exit(0);
+
+    const forceShutdownTimer = setTimeout(() => {
+        logger.error({ signal, timeoutMs: SHUTDOWN_TIMEOUT_MS }, "Graceful shutdown timed out");
+        server.closeAllConnections();
+        process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS);
+    forceShutdownTimer.unref();
+
+    try {
+        const httpServerClosed = new Promise<void>((resolve, reject) => {
+            server.close((closeErr) => (closeErr ? reject(closeErr) : resolve()));
+        });
+
+        // close() stops new connections; this closes keep-alive connections that are currently idle.
+        server.closeIdleConnections();
+        await httpServerClosed;
+        await disconnectDB();
+
+        clearTimeout(forceShutdownTimer);
+        logger.info({ signal }, "Graceful shutdown completed");
+        process.exit(0);
+    } catch (error) {
+        clearTimeout(forceShutdownTimer);
+        logger.error({ err: error, signal }, "Graceful shutdown failed");
+        process.exit(1);
+    }
+}
+
+function requestShutdown(signal: NodeJS.Signals) {
+    if (shutdownPromise) {
+        logger.warn({ signal }, "Shutdown already in progress");
+        return;
+    }
+
+    shutdownPromise = shutdown(signal);
 }
 
 process.on("SIGTERM", () => {
-    void shutdown("SIGTERM");
+    requestShutdown("SIGTERM");
 });
 process.on("SIGINT", () => {
-    void shutdown("SIGINT");
+    requestShutdown("SIGINT");
 });
