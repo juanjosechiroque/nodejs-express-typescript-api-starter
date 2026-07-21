@@ -7,9 +7,9 @@ This document explains how the project is organized and how to extend it without
 | Layer            | Technology                           |
 | ---------------- | ------------------------------------ |
 | Runtime          | Node.js 24+ (ESM)                    |
-| Language         | TypeScript                           |
+| Language         | TypeScript 6                         |
 | Framework        | Express 5                            |
-| Database         | MongoDB via Mongoose 8               |
+| Database         | MongoDB via Mongoose 9               |
 | Auth             | JWT (jsonwebtoken)                   |
 | Validation       | Zod                                  |
 | Testing          | Vitest + Supertest                   |

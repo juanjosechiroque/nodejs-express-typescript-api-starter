@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Types, type QueryFilter } from "mongoose";
 import Product, { type ProductPersistence } from "./product.model.js";
 import { toProductDTO } from "./product.mapper.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
@@ -6,7 +6,7 @@ import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "
 export async function createProduct(input: CreateProductInput) {
     const product = new Product(input);
     await product.save();
-    return toProductDTO(product as unknown as ProductPersistence);
+    return toProductDTO(product);
 }
 
 export async function findProducts({
@@ -15,7 +15,7 @@ export async function findProducts({
     status,
     isFeatured,
 }: ListProductsInput = {}) {
-    const query: Record<string, unknown> = {};
+    const query: QueryFilter<ProductPersistence> = {};
     if (cursor) query._id = { $gt: new Types.ObjectId(cursor) };
     if (status) query.status = status;
     if (isFeatured !== undefined) query.isFeatured = isFeatured;
@@ -37,15 +37,15 @@ export async function findProducts({
 
 export async function findProductById(id: string) {
     const product = await Product.findById(id).lean();
-    return product ? toProductDTO(product as unknown as ProductPersistence) : null;
+    return product ? toProductDTO(product) : null;
 }
 
 export async function updateProductById(id: string, update: UpdateProductInput) {
     const product = await Product.findByIdAndUpdate(id, update, {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
     }).lean();
-    return product ? toProductDTO(product as unknown as ProductPersistence) : null;
+    return product ? toProductDTO(product) : null;
 }
 
 export async function deleteProductIfNotActive(productId: string) {
@@ -53,5 +53,5 @@ export async function deleteProductIfNotActive(productId: string) {
         _id: productId,
         status: { $ne: "active" },
     });
-    return deleted ? toProductDTO(deleted as unknown as ProductPersistence) : null;
+    return deleted ? toProductDTO(deleted) : null;
 }

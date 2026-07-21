@@ -32,7 +32,6 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
             server.close((closeErr) => (closeErr ? reject(closeErr) : resolve()));
         });
 
-        // close() stops new connections; this closes keep-alive connections that are currently idle.
         server.closeIdleConnections();
         await httpServerClosed;
         await disconnectDB();

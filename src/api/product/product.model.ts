@@ -1,4 +1,4 @@
-import { Schema, model, type InferSchemaType } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 import {
     PRODUCT_DESCRIPTION_MAX_LENGTH,
     PRODUCT_NAME_MAX_LENGTH,
@@ -6,7 +6,19 @@ import {
     PRODUCT_STOCK_MAX,
 } from "./product.constants.js";
 
-const productSchema = new Schema(
+export interface ProductPersistence {
+    _id: Types.ObjectId;
+    name: string;
+    price: number;
+    stock: number;
+    status: "draft" | "active" | "archived";
+    isFeatured: boolean;
+    description?: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
+const productSchema = new Schema<ProductPersistence>(
     {
         name: { type: String, required: true, trim: true, maxlength: PRODUCT_NAME_MAX_LENGTH },
         price: { type: Number, required: true, min: Number.MIN_VALUE, max: PRODUCT_PRICE_MAX },
@@ -29,11 +41,5 @@ const productSchema = new Schema(
 productSchema.index({ status: 1, isFeatured: 1, _id: 1 });
 
 const Product = model("Product", productSchema, "products");
-
-export type ProductPersistence = InferSchemaType<typeof productSchema> & {
-    _id: { toString: () => string };
-    created_at: Date;
-    updated_at: Date;
-};
 
 export default Product;

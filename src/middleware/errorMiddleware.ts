@@ -38,7 +38,6 @@ function resolveError(err: unknown): ResolvedError {
         };
     }
 
-    // Use err.name so tests work when mongoose is mocked (no mongoose.Error.* constructors).
     if (errorLike.name === "CastError") {
         return {
             statusCode: 400,
