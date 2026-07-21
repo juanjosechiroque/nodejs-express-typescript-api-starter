@@ -1,4 +1,4 @@
-name: Build Main
+name: CI
 
 on:
     push:
@@ -8,17 +8,17 @@ on:
     workflow_dispatch:
 
 concurrency:
-    group: build-deploy-main-${{ github.ref }}
+    group: ci-${{ github.ref }}
     cancel-in-progress: true
 
 permissions:
     contents: read
 
 env:
-    IMAGE_NAME: nodejs-express-api-boilerplate
+    IMAGE_NAME: nodejs-express-typescript-api-starter
 
 jobs:
-    build-and-deploy:
+    validate-test-build:
         name: Validate, test, and build
         runs-on: ubuntu-latest
         timeout-minutes: 15
