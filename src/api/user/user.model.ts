@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
-import { applyBaseToJsonTransform } from "../../utils/toJSONPlugin.js";
 
 const userSchema = new Schema(
     {
@@ -35,7 +34,6 @@ userSchema.pre("save", async function (next) {
 userSchema.set("toJSON", {
     versionKey: false,
     transform: function (_doc: unknown, ret: Record<string, unknown>) {
-        applyBaseToJsonTransform(_doc, ret);
         delete ret.password;
     },
 });

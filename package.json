@@ -13,6 +13,8 @@
         "prepare": "husky || true",
         "seed": "tsx src/scripts/seed.ts",
         "test": "vitest run",
+        "test:integration": "vitest run --config vitest.integration.config.ts",
+        "test:all": "npm test && npm run test:integration",
         "test:coverage": "vitest run --coverage",
         "typecheck": "tsc --project tsconfig.check.json"
     },
@@ -44,6 +46,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@testcontainers/mongodb": "^12.0.4",
         "@types/bcrypt": "^6.0.0",
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",

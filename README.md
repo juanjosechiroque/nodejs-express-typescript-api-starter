@@ -52,17 +52,19 @@ It includes a small auth flow and a product module that show how routes, validat
 
 ## Available Scripts
 
-| Script                  | Description             |
-| ----------------------- | ----------------------- |
-| `npm start`             | Start server            |
-| `npm run dev`           | Start dev server        |
-| `npm run build`         | Compile TypeScript      |
-| `npm run validate`      | ESLint + Prettier check |
-| `npm run format`        | Format + ESLint --fix   |
-| `npm run seed`          | Seed demo user/products |
-| `npm test`              | Vitest                  |
-| `npm run test:coverage` | Vitest + coverage       |
-| `npm run typecheck`     | TypeScript typecheck    |
+| Script                     | Description                        |
+| -------------------------- | ---------------------------------- |
+| `npm start`                | Start server                       |
+| `npm run dev`              | Start dev server                   |
+| `npm run build`            | Compile TypeScript                 |
+| `npm run validate`         | ESLint + Prettier check            |
+| `npm run format`           | Format + ESLint --fix              |
+| `npm run seed`             | Seed demo user/products            |
+| `npm test`                 | Fast tests with mocked persistence |
+| `npm run test:integration` | Integration tests with MongoDB     |
+| `npm run test:all`         | Fast and integration test suites   |
+| `npm run test:coverage`    | Vitest + coverage                  |
+| `npm run typecheck`        | TypeScript typecheck               |
 
 ## Environment variables
 
@@ -175,6 +177,8 @@ docker compose up --build
 
 Docker Compose starts the API and a local MongoDB container. By default, the API connects to `mongodb://mongo:27017/api_starter` inside the Compose network.
 
+Both containers expose health checks. MongoDB is checked with `db.adminCommand('ping')`, while the API checks `/v1/health`. Compose waits for MongoDB to become healthy before starting the API.
+
 Compose uses `JWT_SECRET` when provided, otherwise it falls back to a demo-only secret long enough to satisfy startup validation. Replace it for real environments.
 
 To use MongoDB Atlas or another remote MongoDB, set `COMPOSE_MONGODB_URI` in `.env`; no change to `docker-compose.yml` is required.
@@ -258,11 +262,15 @@ These files point to [ARCHITECTURE.md](./ARCHITECTURE.md) so generated changes f
 
 ## Testing
 
-The test setup uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models so CI does not require a live database.
+The fast test suite uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models. Critical persistence paths also run against MongoDB 8.0 through **Testcontainers**. The integration suite verifies real Mongoose validation, indexes, hooks, serialization, filters, and cursor pagination.
+
+Docker must be installed and running before executing the integration suite. Testcontainers creates an isolated MongoDB container and removes it after the suite finishes; it never uses the development database configured in `.env`.
 
 ```bash
 npm run typecheck
 npm test
+npm run test:integration
+npm run test:all
 npm run test:coverage
 ```
 

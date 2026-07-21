@@ -11,6 +11,7 @@ describe("toJSONPlugin", () => {
     function applyPlugin() {
         let capturedConfig: ToJsonConfig | undefined;
         const mockSchema = {
+            get: () => undefined,
             set: (_key: string, config: ToJsonConfig) => {
                 capturedConfig = config;
             },
@@ -48,5 +49,28 @@ describe("toJSONPlugin", () => {
         transform({}, ret);
         expect(ret["name"]).toBe("test");
         expect(ret["price"]).toBe(42);
+    });
+
+    it("preserves a schema-specific transform", () => {
+        let capturedConfig: ToJsonConfig | undefined;
+        const customTransform = (_doc: unknown, ret: Record<string, unknown>) => {
+            delete ret["secret"];
+        };
+        const mockSchema = {
+            get: () => ({ transform: customTransform }),
+            set: (_key: string, config: ToJsonConfig) => {
+                capturedConfig = config;
+            },
+        };
+
+        toJSONPlugin(mockSchema as unknown as Schema);
+        const ret: Record<string, unknown> = {
+            _id: { toHexString: () => "abc123" },
+            secret: "hidden",
+        };
+        capturedConfig?.transform({}, ret);
+
+        expect(ret["id"]).toBe("abc123");
+        expect(ret["secret"]).toBeUndefined();
     });
 });

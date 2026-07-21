@@ -5,11 +5,15 @@ export default defineConfig({
         environment: "node",
         globals: false,
         include: ["src/**/*.test.ts"],
+        exclude: ["src/**/*.integration.test.ts"],
+        // Test files share the same Mongoose model mocks; keep their mutation deterministic.
+        fileParallelism: false,
         setupFiles: ["src/tests/vitest.setup.ts"],
         clearMocks: true,
         coverage: {
             provider: "v8",
             reporter: ["text", "lcov"],
+            include: ["src/**/*.ts"],
             exclude: [
                 "coverage/**",
                 "dist/**",

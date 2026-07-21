@@ -3,6 +3,12 @@
     "compilerOptions": {
         "noEmit": true
     },
-    "include": ["index.ts", "src/**/*.ts", "vitest.config.ts", "eslint.config.js"],
+    "include": [
+        "index.ts",
+        "src/**/*.ts",
+        "vitest.config.ts",
+        "vitest.integration.config.ts",
+        "eslint.config.js"
+    ],
     "exclude": ["node_modules", "dist", "coverage"]
 }
