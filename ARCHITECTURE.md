@@ -17,6 +17,13 @@ This document explains how the project is organized and how to extend it without
 | CI/CD            | GitHub Actions                       |
 | Code quality     | ESLint + Prettier + Husky pre-commit |
 
+## Core decisions
+
+- **Express and feature modules:** Express keeps the HTTP layer small and explicit. The module pattern adds some files per feature, but preserves clear ownership as the codebase grows.
+- **MongoDB and Mongoose:** The document model keeps setup and CRUD development simple. Applications that require strong relational constraints, complex joins, or multi-entity reporting should evaluate PostgreSQL instead.
+- **TypeScript 6:** The project favors the stable compiler and lint ecosystem over early adoption of TypeScript 7.
+- **Stable public DTOs:** Mappers prevent MongoDB fields from leaking into API contracts. This adds a translation step but allows persistence models to evolve independently.
+
 ## Project structure
 
 ```
@@ -62,6 +69,8 @@ Auth only exposes signup and login. That is enough for the starter to issue JWTs
 The product module is the main example feature. It includes public reads, protected writes, Zod validation, service/repository/model separation, cursor pagination, filters, defaults, and the archived-before-delete rule.
 
 Product write routes require authentication, but they do not enforce ownership or roles. Add those checks in the service layer when the application domain needs them.
+
+Product `price` is a JavaScript number to keep the example compact. Applications that perform monetary calculations should store integer minor units with an explicit currency code; use Decimal128 only when the domain requires variable precision.
 
 ## Layer responsibilities and data flow
 
@@ -143,6 +152,8 @@ Protected routes use `authenticate`. It validates `Authorization: Bearer <token>
 
 JWTs are still stateless. The active-user check gives the API a simple way to disable access after a user is deactivated, without adding token blacklists, refresh-token storage, or session tracking.
 
+The active-user check also puts MongoDB on the critical path for every authenticated request. At higher load, measure this lookup before introducing a short-lived cache or session store.
+
 Refresh tokens, token rotation, revocation lists, password reset, email verification, MFA, and account recovery are intentionally out of scope. These features require complete storage, rotation, reuse-detection, expiry, revocation, and recovery policies; applications should not add a partial refresh-token flow.
 
 Public and protected routes are declared explicitly in each router — no global auth applied by default.
@@ -161,6 +172,8 @@ Both the authentication limiter and the optional global limiter use in-memory co
 - The Docker production stage runs as the non-root `appuser`.
 - Secrets are validated at startup and must be supplied by the runtime environment; Docker Compose does not provide a fallback JWT secret.
 - CI rejects high or critical npm audit findings.
+
+Dependency upgrades are intentionally manual. The audit gate detects known advisories during CI, but maintainers remain responsible for reviewing and scheduling version updates.
 
 ## Environment configuration
 
@@ -187,6 +200,12 @@ The product collection has a compound index on `{ status: 1, isFeatured: 1, _id:
 - Persistence integration tests live under `src/tests/integration/` and use Testcontainers with MongoDB 8.0. They verify indexes, hooks, validators, serialization, filters, and cursor pagination against the real driver.
 - Product contract tests run Express and MongoDB together to ensure create, list, get, and patch return the same `ProductDTO`, independent of Mongoose document or `lean()` behavior.
 - Fast coverage and integration tests remain separate: `npm run test:coverage` enforces coverage thresholds, while `npm run test:integration` requires Docker and validates persistence behavior.
+
+Mocks keep the default suite fast but can diverge from Mongoose behavior. Integration tests cover the persistence and contract paths where that divergence would be most costly rather than duplicating every unit test against MongoDB.
+
+## Scaling boundaries
+
+The starter targets local development and a modest single-instance deployment. It can run multiple API replicas, but production scaling requires a shared rate-limit store. MongoDB capacity and the authenticated-user lookup are the first expected bottlenecks; add caching only after measuring them. Service metrics, distributed tracing, queues, and multi-region concerns are intentionally left to the adopting application.
 
 ## Docker
 

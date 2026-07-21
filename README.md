@@ -19,6 +19,7 @@ It includes a small auth flow and a product module that show how routes, validat
 
 - Node.js 24+
 - npm
+- MongoDB 8.0 or Docker
 
 ## Quick Start
 
@@ -45,7 +46,13 @@ It includes a small auth flow and a product module that show how routes, validat
 
     Edit `.env` using `.env.example` as reference. Never commit the generated secret.
 
-4. **Start the development server**
+4. **Start MongoDB**
+
+    ```bash
+    docker compose up -d mongo
+    ```
+
+5. **Start the development server**
 
     ```bash
     npm run dev
@@ -268,40 +275,32 @@ Use `src/api/product/` as the reference module for CRUD routes, Zod validation, 
 
 Layer responsibilities and coding conventions are in [ARCHITECTURE.md](./ARCHITECTURE.md).
 
-### AI-assisted development
-
-This project includes configuration files for AI coding assistants:
-
-| Tool         | File                                 |
-| ------------ | ------------------------------------ |
-| Claude Code  | [`CLAUDE.md`](./CLAUDE.md)           |
-| OpenAI Codex | [`AGENTS.md`](./AGENTS.md)           |
-| Cursor       | [`.cursor/rules/`](./.cursor/rules/) |
-
-These files point to [ARCHITECTURE.md](./ARCHITECTURE.md) so generated changes follow the same project conventions.
-
 ## Testing
 
-The fast test suite uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models. Critical persistence paths also run against MongoDB 8.0 through **Testcontainers**. The integration suite verifies real Mongoose validation, indexes, hooks, serialization, filters, and cursor pagination. It also exercises Express with MongoDB real to ensure create, list, get, and patch expose the same `ProductDTO` contract.
-
-Docker must be installed and running before executing the integration suite. Testcontainers creates an isolated MongoDB container and removes it after the suite finishes; it never uses the development database configured in `.env`.
+Fast tests mock persistence for quick feedback. Integration tests use Testcontainers and MongoDB 8.0 for critical persistence and API contract paths; Docker must be running.
 
 ```bash
-npm run typecheck
 npm test
 npm run test:integration
 npm run test:all
 npm run test:coverage
 ```
 
-Husky runs `npm run validate` automatically on each commit to keep lint and formatting clean.
+## Technical decisions and trade-offs
 
-## Trade-offs
+| Decision                              | Benefit                                                                                            | Cost or limitation                                                                       |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| MongoDB with Mongoose                 | Simple local setup and productive document modeling.                                               | Relational integrity, joins, and cross-document consistency remain application concerns. |
+| Cursor pagination over `_id`          | Stable, indexed pagination without increasingly expensive offsets.                                 | No arbitrary page jumps or total count by default.                                       |
+| JWT with an active-user lookup        | Disabled users lose access without waiting for token expiry.                                       | Every authenticated request depends on a database read.                                  |
+| In-memory rate limiting               | Keeps local development dependency-free.                                                           | Counters are not shared across processes and reset on restart.                           |
+| Mocked HTTP tests plus Testcontainers | Fast feedback with targeted verification against real MongoDB.                                     | Mocks can diverge from Mongoose, while integration tests require Docker and run slower.  |
+| Small Product domain                  | Demonstrates the extension pattern without turning the starter into a sample business application. | Pricing, authorization, and lifecycle rules are intentionally simplified.                |
 
-This starter keeps the example domain small on purpose. The product module is enough to show validation, protected writes, repository-backed persistence, cursor pagination, filters, defaults, and one service-level rule: active products must be archived before deletion.
+## Known limitations
 
-Use it as a base and add your own domain modules under `src/api/`.
-
-## License
-
-MIT.
+- Product writes require authentication but do not enforce ownership or roles.
+- `price` uses a JavaScript number for demonstration; real monetary values should use integer minor units plus a currency code.
+- There is no application cache. MongoDB and the active-user lookup are the main pressure points under load.
+- Metrics, distributed tracing, refresh tokens, account recovery, and multi-instance rate limiting are outside the starter's scope.
+- Dependency updates are manual. CI detects high and critical advisories with `npm audit` but does not create upgrade pull requests.
