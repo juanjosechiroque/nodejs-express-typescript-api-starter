@@ -282,7 +282,7 @@ These files point to [ARCHITECTURE.md](./ARCHITECTURE.md) so generated changes f
 
 ## Testing
 
-The fast test suite uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models. Critical persistence paths also run against MongoDB 8.0 through **Testcontainers**. The integration suite verifies real Mongoose validation, indexes, hooks, serialization, filters, and cursor pagination.
+The fast test suite uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models. Critical persistence paths also run against MongoDB 8.0 through **Testcontainers**. The integration suite verifies real Mongoose validation, indexes, hooks, serialization, filters, and cursor pagination. It also exercises Express with MongoDB real to ensure create, list, get, and patch expose the same `ProductDTO` contract.
 
 Docker must be installed and running before executing the integration suite. Testcontainers creates an isolated MongoDB container and removes it after the suite finishes; it never uses the development database configured in `.env`.
 

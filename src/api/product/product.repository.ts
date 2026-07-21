@@ -1,11 +1,12 @@
 import { Types } from "mongoose";
-import Product from "./product.model.js";
+import Product, { type ProductPersistence } from "./product.model.js";
+import { toProductDTO } from "./product.mapper.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
 
 export async function createProduct(input: CreateProductInput) {
     const product = new Product(input);
     await product.save();
-    return product;
+    return toProductDTO(product as unknown as ProductPersistence);
 }
 
 export async function findProducts({
@@ -27,15 +28,24 @@ export async function findProducts({
     if (hasMore) items.pop();
     const lastItem = items.at(-1);
     const nextCursor = hasMore && lastItem ? lastItem._id.toString() : null;
-    return { items, hasMore, nextCursor };
+    return {
+        items: items.map((item) => toProductDTO(item as unknown as ProductPersistence)),
+        hasMore,
+        nextCursor,
+    };
 }
 
 export async function findProductById(id: string) {
-    return await Product.findById(id).lean();
+    const product = await Product.findById(id).lean();
+    return product ? toProductDTO(product as unknown as ProductPersistence) : null;
 }
 
 export async function updateProductById(id: string, update: UpdateProductInput) {
-    return await Product.findByIdAndUpdate(id, update, { new: true, runValidators: true }).lean();
+    const product = await Product.findByIdAndUpdate(id, update, {
+        new: true,
+        runValidators: true,
+    }).lean();
+    return product ? toProductDTO(product as unknown as ProductPersistence) : null;
 }
 
 export async function deleteProductIfNotActive(productId: string) {
@@ -43,5 +53,5 @@ export async function deleteProductIfNotActive(productId: string) {
         _id: productId,
         status: { $ne: "active" },
     });
-    return deleted;
+    return deleted ? toProductDTO(deleted as unknown as ProductPersistence) : null;
 }

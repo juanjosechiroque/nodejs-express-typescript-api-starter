@@ -4,13 +4,28 @@ import mockMongoose from "../../tests/mongoose-mock.js";
 const { api, V1 } = await import("../../tests/helpers.js");
 
 const validMongoId = "507f1f77bcf86cd799439011";
+const timestamp = new Date("2026-01-01T00:00:00.000Z");
+
+function persistedProduct(product: Record<string, unknown> = {}) {
+    return {
+        _id: validMongoId,
+        name: "Mocked Product",
+        price: 100,
+        stock: 0,
+        status: "draft",
+        isFeatured: false,
+        created_at: timestamp,
+        updated_at: timestamp,
+        ...product,
+    };
+}
 
 describe("GET /v1/products", () => {
     function makeFindChain(items: Record<string, unknown>[]) {
         const chain: Record<string, unknown> = {};
         chain.limit = vi.fn().mockReturnValue(chain);
         chain.sort = vi.fn().mockReturnValue(chain);
-        chain.lean = vi.fn().mockResolvedValue(items);
+        chain.lean = vi.fn().mockResolvedValue(items.map((item) => persistedProduct(item)));
         return chain;
     }
 
@@ -111,7 +126,7 @@ describe("GET /v1/products", () => {
 
 describe("GET /v1/products/:id", () => {
     it("returns the product when found", async () => {
-        const productMock = { _id: validMongoId, name: "Mocked Product 1", price: 100 };
+        const productMock = persistedProduct({ name: "Mocked Product 1", price: 100 });
         mockMongoose
             .model("Product")
             .findById.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(productMock) });
@@ -243,9 +258,9 @@ describe("POST /v1/products", () => {
 describe("PATCH /v1/products/:id", () => {
     it("returns the updated product", async () => {
         const data = { name: "updated", price: 20, stock: 12, status: "archived" };
-        mockMongoose
-            .model("Product")
-            .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(data) });
+        mockMongoose.model("Product").findByIdAndUpdate.mockReturnValueOnce({
+            lean: vi.fn().mockResolvedValue(persistedProduct(data)),
+        });
 
         const response = await api
             .patch(`${V1}/products/${validMongoId}`)
@@ -292,12 +307,11 @@ describe("PATCH /v1/products/:id", () => {
 
 describe("DELETE /v1/products/:id", () => {
     it("deletes the product and returns 200", async () => {
-        const productMock = {
-            _id: validMongoId,
+        const productMock = persistedProduct({
             name: "Mocked Product 1",
             price: 100,
             status: "archived",
-        };
+        });
         mockMongoose.model("Product").findOneAndDelete.mockResolvedValueOnce(productMock);
 
         const response = await api
@@ -310,7 +324,7 @@ describe("DELETE /v1/products/:id", () => {
     it("returns 400 when the product is active", async () => {
         mockMongoose.model("Product").findOneAndDelete.mockResolvedValueOnce(null);
         mockMongoose.model("Product").findById.mockReturnValueOnce({
-            lean: vi.fn().mockResolvedValue({ _id: validMongoId, status: "active" }),
+            lean: vi.fn().mockResolvedValue(persistedProduct({ status: "active" })),
         });
 
         const response = await api

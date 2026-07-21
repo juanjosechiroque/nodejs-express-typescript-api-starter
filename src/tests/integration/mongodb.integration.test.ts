@@ -1,4 +1,5 @@
 import { MongoDBContainer, type StartedMongoDBContainer } from "@testcontainers/mongodb";
+import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 let container: StartedMongoDBContainer;
@@ -7,6 +8,7 @@ let disconnectDB: typeof import("../../database.js").disconnectDB;
 let Product: typeof import("../../api/product/product.model.js").default;
 let User: typeof import("../../api/user/user.model.js").default;
 let productRepository: typeof import("../../api/product/product.repository.js");
+let api: ReturnType<typeof request>;
 
 beforeAll(async () => {
     container = await new MongoDBContainer("mongo:8.0").start();
@@ -22,6 +24,7 @@ beforeAll(async () => {
 
     await connectDB();
     await Promise.all([Product.init(), User.init()]);
+    api = request((await import("../../app.js")).default);
 });
 
 beforeEach(async () => {
@@ -96,4 +99,68 @@ describe("MongoDB integration", () => {
             User.create({ email: "DUPLICATE@example.com", password: "Password123!" })
         ).rejects.toMatchObject({ code: 11000 });
     });
+
+    it("returns the same Product DTO contract from create, list, get, and patch", async () => {
+        const signupResponse = await api.post("/v1/auth/signup").send({
+            email: "contract@example.com",
+            password: "ContractPassword123!",
+        });
+        expect(signupResponse.status).toBe(201);
+        const token = signupResponse.body.data as string;
+
+        const createResponse = await api
+            .post("/v1/products")
+            .set("Authorization", `Bearer ${token}`)
+            .send({
+                name: "Contract Product",
+                description: "Product DTO integration test",
+                price: 49.99,
+                stock: 5,
+                status: "active",
+                isFeatured: true,
+            });
+
+        expect(createResponse.status).toBe(201);
+        expectProductContract(createResponse.body.data);
+        const productId = createResponse.body.data.id as string;
+
+        const listResponse = await api.get("/v1/products");
+        expect(listResponse.status).toBe(200);
+        expectProductContract(listResponse.body.data.items[0]);
+        expect(listResponse.body.data.items[0].id).toBe(productId);
+
+        const getResponse = await api.get(`/v1/products/${productId}`);
+        expect(getResponse.status).toBe(200);
+        expectProductContract(getResponse.body.data);
+        expect(getResponse.body.data.id).toBe(productId);
+
+        const patchResponse = await api
+            .patch(`/v1/products/${productId}`)
+            .set("Authorization", `Bearer ${token}`)
+            .send({ name: "Updated Contract Product" });
+        expect(patchResponse.status).toBe(200);
+        expectProductContract(patchResponse.body.data);
+        expect(patchResponse.body.data).toMatchObject({
+            id: productId,
+            name: "Updated Contract Product",
+        });
+    });
 });
+
+function expectProductContract(product: unknown) {
+    expect(product).toEqual({
+        id: expect.stringMatching(/^[0-9a-f]{24}$/),
+        name: expect.any(String),
+        description: expect.any(String),
+        price: expect.any(Number),
+        stock: expect.any(Number),
+        status: expect.stringMatching(/^(draft|active|archived)$/),
+        isFeatured: expect.any(Boolean),
+        createdAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+        updatedAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+    });
+    expect(product).not.toHaveProperty("_id");
+    expect(product).not.toHaveProperty("__v");
+    expect(product).not.toHaveProperty("created_at");
+    expect(product).not.toHaveProperty("updated_at");
+}

@@ -30,8 +30,10 @@ productSchema.index({ status: 1, isFeatured: 1, _id: 1 });
 
 const Product = model("Product", productSchema, "products");
 
-export type ProductDocument = InferSchemaType<typeof productSchema> & {
+export type ProductPersistence = InferSchemaType<typeof productSchema> & {
     _id: { toString: () => string };
+    created_at: Date;
+    updated_at: Date;
 };
 
 export default Product;

@@ -20,7 +20,15 @@ const mockSchema = () => ({
 
 const createMockModel = (): MockModel => {
     const Model = vi.fn(function (this: Record<string, unknown>, data: Record<string, unknown>) {
-        Object.assign(this, data);
+        Object.assign(
+            this,
+            {
+                _id: { toString: () => "507f1f77bcf86cd799439011" },
+                created_at: new Date("2026-01-01T00:00:00.000Z"),
+                updated_at: new Date("2026-01-01T00:00:00.000Z"),
+            },
+            data
+        );
     }) as unknown as MockModel;
 
     const defaultFindChain = {

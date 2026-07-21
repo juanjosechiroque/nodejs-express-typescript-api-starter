@@ -48,6 +48,7 @@ Each domain feature is self-contained in `src/api/{feature}/`:
 {feature}.validation.ts   # Zod schemas for body, params, and query
 {feature}.repository.ts   # Persistence operations (Mongoose hidden from services)
 {feature}.model.ts        # Mongoose schema, indexes, serialization
+{feature}.mapper.ts       # Persistence objects to stable public DTOs, when needed
 {feature}.types.ts        # Feature input/output types when useful
 {feature}.test.ts         # Unit or HTTP behavior tests (Vitest + Supertest)
 ```
@@ -77,6 +78,8 @@ router → controller → service → repository → model
 | `model`      | Schema definition, indexes, `toJSON` transforms                      | Contain query logic            |
 
 Controllers never access the database directly. Services never reference Express objects or Mongoose APIs directly.
+
+Persistence-specific names and types must not leak into public responses. Features that need translation expose stable DTOs through a mapper; for example, Product maps MongoDB `_id`, `created_at`, and `updated_at` to `id`, `createdAt`, and `updatedAt` before data leaves the repository boundary.
 
 ## Request validation
 
@@ -179,10 +182,11 @@ The product collection has a compound index on `{ status: 1, isFeatured: 1, _id:
 
 ## Testing approach
 
-- Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`
-- HTTP behavior is tested end-to-end via Supertest against the real Express app
-- Mongoose is mocked at the model level (`src/tests/mongoose-mock.ts`) to avoid requiring a live database in CI
-- Every feature covers: happy path, validation failures, auth failures, not-found cases, and DB error paths
+- Fast tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`.
+- Supertest exercises the real Express middleware and routing stack while Mongoose is mocked at the model boundary.
+- Persistence integration tests live under `src/tests/integration/` and use Testcontainers with MongoDB 8.0. They verify indexes, hooks, validators, serialization, filters, and cursor pagination against the real driver.
+- Product contract tests run Express and MongoDB together to ensure create, list, get, and patch return the same `ProductDTO`, independent of Mongoose document or `lean()` behavior.
+- Fast coverage and integration tests remain separate: `npm run test:coverage` enforces coverage thresholds, while `npm run test:integration` requires Docker and validates persistence behavior.
 
 ## Docker
 
@@ -199,4 +203,4 @@ This keeps the final image minimal and avoids running as root in production.
 2. Register the router in `src/router.ts`
 3. Add environment variables to `src/config.ts` if needed
 4. Write tests covering the HTTP behavior
-5. Run `npm run validate && npm run typecheck && npm test` before committing
+5. Run `npm run validate && npm run typecheck && npm run build && npm run test:all` before committing

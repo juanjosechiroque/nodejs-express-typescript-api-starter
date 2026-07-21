@@ -17,7 +17,7 @@ npm run format        # auto-fix
 ## Before committing
 
 ```bash
-npm run validate && npm run typecheck && npm run build && npm test
+npm run validate && npm run typecheck && npm run build && npm run test:all
 ```
 
 All checks must pass. Fix any failures before committing — do not skip hooks.
