@@ -32,8 +32,13 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-    await disconnectDB();
-    await container.stop();
+    if (disconnectDB) {
+        await disconnectDB();
+    }
+
+    if (container) {
+        await container.stop();
+    }
 });
 
 describe("MongoDB integration", () => {

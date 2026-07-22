@@ -3,6 +3,9 @@ info:
     title: Node.js Express TypeScript API Starter
     version: 1.0.0
     description: REST API starter with auth, product routes, validation, request tracing, and standard response shapes.
+    license:
+        name: MIT
+        identifier: MIT
 servers:
     - url: http://localhost:3000
 
@@ -13,6 +16,7 @@ paths:
         get:
             summary: API status
             operationId: getRootStatus
+            security: []
             responses:
                 "200":
                     description: API is running
@@ -30,6 +34,7 @@ paths:
         get:
             summary: Health check
             operationId: getHealth
+            security: []
             responses:
                 "200":
                     description: Service is healthy
@@ -56,6 +61,7 @@ paths:
         post:
             summary: Register a user
             operationId: signup
+            security: []
             requestBody:
                 required: true
                 content:
@@ -74,6 +80,8 @@ paths:
                                 $ref: "#/components/schemas/AuthResponse"
                 "400":
                     $ref: "#/components/responses/BadRequest"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
     /v1/auth/login:
         parameters:
@@ -81,6 +89,7 @@ paths:
         post:
             summary: Authenticate a user
             operationId: login
+            security: []
             requestBody:
                 required: true
                 content:
@@ -101,6 +110,8 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
     /v1/products:
         parameters:
@@ -108,6 +119,7 @@ paths:
         get:
             summary: List products
             operationId: listProducts
+            security: []
             parameters:
                 - name: limit
                   in: query
@@ -180,6 +192,7 @@ paths:
         get:
             summary: Get a product by ID
             operationId: getProductById
+            security: []
             responses:
                 "200":
                     description: Product retrieved
@@ -272,6 +285,8 @@ components:
             in: header
             required: false
             description: Optional client-provided request correlation ID. A UUID is generated when omitted.
+            schema:
+                type: string
         ProductId:
             name: id
             in: path
@@ -308,6 +323,15 @@ components:
                         $ref: "#/components/schemas/ErrorResponse"
         NotFound:
             description: Resource not found
+            headers:
+                x-request-id:
+                    $ref: "#/components/headers/XRequestId"
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/ErrorResponse"
+        TooManyRequests:
+            description: Rate limit exceeded
             headers:
                 x-request-id:
                     $ref: "#/components/headers/XRequestId"
