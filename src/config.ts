@@ -15,6 +15,7 @@ const envSchema = z
         CORS_ALLOWED_ORIGINS: z.string().trim().optional(),
         RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().positive().optional(),
         RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
+        TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(0),
         LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
     })
     .refine(
@@ -44,5 +45,6 @@ export const {
     CORS_ALLOWED_ORIGINS,
     RATE_LIMIT_WINDOW_MINUTES,
     RATE_LIMIT_MAX,
+    TRUST_PROXY_HOPS,
     LOG_LEVEL,
 } = parsedEnv.data;

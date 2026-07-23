@@ -13,13 +13,14 @@ import {
     NODE_ENV,
     RATE_LIMIT_MAX,
     RATE_LIMIT_WINDOW_MINUTES,
+    TRUST_PROXY_HOPS,
 } from "./config.js";
 import logger from "./utils/logger.js";
 import type { Request } from "express";
 
 const app = express();
 
-app.set("trust proxy", 1);
+app.set("trust proxy", TRUST_PROXY_HOPS);
 
 app.use(helmet());
 app.use(requestIdMiddleware);

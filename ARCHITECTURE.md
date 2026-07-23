@@ -53,6 +53,7 @@ Public responses use DTO mappers when persistence fields must not become part of
 - Zod validates environment variables and request inputs before feature logic runs.
 - Helmet, an opt-in CORS allowlist, a 10 KB JSON body limit, and Pino redaction provide baseline HTTP security.
 - Authentication endpoints have a fixed per-IP limit; the optional global limiter is process-local.
+- Proxy trust defaults to `0` for direct connections. Set `TRUST_PROXY_HOPS=1` only behind one trusted reverse proxy; use a higher value only for a known fixed proxy chain.
 - Logs are JSON in production and include an `x-request-id` correlation ID.
 - The Docker image runs as a non-root user and shuts down HTTP and MongoDB connections gracefully.
 - CI runs audit, formatting, type checks, tests, integration tests, and an image build; it validates an artifact but does not publish or deploy one.
