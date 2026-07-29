@@ -4,6 +4,10 @@ An Express 5 + TypeScript starter for REST APIs with MongoDB, JWT auth, Zod vali
 
 It includes a small auth flow and a product module that show how routes, validation, auth, persistence, pagination, seed data, and tests fit together.
 
+The example domain is intentionally small. Auth exists to protect routes, while products provide a complete reference CRUD module without introducing application-specific roles, ownership, orders, or payments.
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for design decisions and trade-offs.
+
 ## Features
 
 - **TypeScript + Express 5** — ESM setup with strict type checks.
@@ -19,13 +23,14 @@ It includes a small auth flow and a product module that show how routes, validat
 
 - Node.js 24+
 - npm
+- Docker and Docker Compose (recommended for local MongoDB)
 
 ## Quick Start
 
 1. **Clone the repository**
 
     ```bash
-    git clone <your-repo-url>
+    git clone https://github.com/juanjosechiroque/nodejs-express-typescript-api-starter.git
     cd nodejs-express-typescript-api-starter
     ```
 
@@ -42,7 +47,17 @@ It includes a small auth flow and a product module that show how routes, validat
     # Edit .env using .env.example as reference.
     ```
 
-4. **Start the development server**
+4. **Start MongoDB**
+
+    The default local development flow uses Docker for MongoDB:
+
+    ```bash
+    docker compose up -d mongo
+    ```
+
+    To use an existing local MongoDB instance or a remote database such as MongoDB Atlas, set `MONGODB_URI` in `.env` instead. Docker is not required for that option.
+
+5. **Start the development server**
 
     ```bash
     npm run dev
@@ -50,19 +65,25 @@ It includes a small auth flow and a product module that show how routes, validat
 
     By default the app listens on port 3000.
 
+    Verify from another terminal:
+
+    ```bash
+    curl http://localhost:3000/v1/health
+    ```
+
 ## Available Scripts
 
-| Script                  | Description             |
-| ----------------------- | ----------------------- |
-| `npm start`             | Start server            |
-| `npm run dev`           | Start dev server        |
-| `npm run build`         | Compile TypeScript      |
-| `npm run validate`      | ESLint + Prettier check |
-| `npm run format`        | Format + ESLint --fix   |
-| `npm run seed`          | Seed demo user/products |
-| `npm test`              | Vitest                  |
-| `npm run test:coverage` | Vitest + coverage       |
-| `npm run typecheck`     | TypeScript typecheck    |
+| Script                  | Description                                    |
+| ----------------------- | ---------------------------------------------- |
+| `npm start`             | Run the compiled production build              |
+| `npm run dev`           | Start the API in development mode              |
+| `npm run build`         | Compile TypeScript to `dist/`                  |
+| `npm run validate`      | Check linting and formatting                   |
+| `npm run format`        | Apply formatting and lint fixes                |
+| `npm run seed`          | Reset the demo user and upsert demo products   |
+| `npm test`              | Run the test suite once                        |
+| `npm run test:coverage` | Run the test suite with coverage               |
+| `npm run typecheck`     | Check TypeScript types without emitting output |
 
 ## Environment variables
 
@@ -71,10 +92,10 @@ Copy `.env.example` to `.env`. In non-production, variables are loaded with `dot
 | Variable                    | Required | Description                                                                                                            |
 | --------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `PORT`                      | No       | HTTP port (default `3000`).                                                                                            |
-| `NODE_ENV`                  | No       | Typical values: `development`, `production`. Affects env loading.                                                      |
-| `MONGODB_URI`               | **Yes**  | MongoDB connection string. The app exits at startup if missing or empty.                                               |
-| `JWT_SECRET`                | **Yes**  | Secret used to sign JWTs. Must be at least 32 characters.                                                              |
-| `JWT_EXPIRATION_TIME`       | No       | JWT lifetime (default `1h`).                                                                                           |
+| `NODE_ENV`                  | No       | Runtime environment (default `development`).                                                                           |
+| `MONGODB_URI`               | **Yes**  | MongoDB connection string.                                                                                             |
+| `JWT_SECRET`                | **Yes**  | JWT signing secret; minimum 32 characters.                                                                             |
+| `JWT_EXPIRATION_TIME`       | No       | Token lifetime (default `1h`).                                                                                         |
 | `CORS_ALLOWED_ORIGINS`      | No       | Comma-separated allowed origins. CORS is only enabled when this is set. Use `*` to allow all origins.                  |
 | `RATE_LIMIT_WINDOW_MINUTES` | No       | Length of the sliding window in **minutes**. Must be configured together with `RATE_LIMIT_MAX`.                        |
 | `RATE_LIMIT_MAX`            | No       | Max **HTTP requests per IP** allowed inside that window. Must be configured together with `RATE_LIMIT_WINDOW_MINUTES`. |
@@ -117,12 +138,12 @@ The login example uses `jq` to extract the JWT.
 # Sign up
 curl -s -X POST http://localhost:3000/v1/auth/signup \
   -H "Content-Type: application/json" \
-  -d '{"email":"demo@example.com","password":"DemoPassword123!"}'
+  -d '{"email":"new-user@example.com","password":"DemoPassword123!"}'
 
 # Log in and save the JWT
 TOKEN=$(curl -s -X POST http://localhost:3000/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"demo@example.com","password":"DemoPassword123!"}' \
+  -d '{"email":"new-user@example.com","password":"DemoPassword123!"}' \
   | jq -r '.data')
 
 # Create a product
@@ -149,31 +170,20 @@ Replace `PRODUCT_ID` with a MongoDB ObjectId from a create or list response.
 
 ## Docker
 
-### Build and run the API image
+Use this command to verify the production Docker image locally. For day-to-day development, run only MongoDB with Docker and start the API with `npm run dev`.
 
-```bash
-docker build -t nodejs-express-typescript-api-starter .
-docker run -p 3000:3000 --env-file .env nodejs-express-typescript-api-starter
-```
-
-The image uses a multi-stage build and runs as a non-root user in production.
-
-### Run API + MongoDB with Docker Compose
+### Verify the containerized stack
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Docker Compose starts the API and a local MongoDB container. By default, the API connects to `mongodb://mongo:27017/api_starter` inside the Compose network.
+Docker Compose starts the production API image and a local MongoDB container. By default, the API connects to `mongodb://mongo:27017/api_starter` inside the Compose network. The image uses a multi-stage build and runs as a non-root user.
 
-Compose uses `JWT_SECRET` when provided, otherwise it falls back to a demo-only secret long enough to satisfy startup validation. Replace it for real environments.
+Compose does not load demo data automatically. With the stack running, execute `npm run seed` from the host when you want the demo user and products.
 
-To use MongoDB Atlas or another remote MongoDB, set `COMPOSE_MONGODB_URI` in `.env`; no change to `docker-compose.yml` is required.
-
-```env
-COMPOSE_MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>
-```
+Set a strong `JWT_SECRET` in `.env` before using the stack outside local development.
 
 Useful commands:
 
@@ -184,22 +194,6 @@ docker compose down -v
 ```
 
 Use `docker compose down -v` only when you want to remove the local MongoDB volume and start with an empty database.
-
-## Demo data
-
-Seed a local or Compose-backed database manually:
-
-```bash
-npm run seed
-```
-
-The seed is idempotent and creates or updates:
-
-- demo user: `demo@example.com`
-- demo password: `DemoPassword123!`
-- five products: three `active`, one `draft`, one `archived`, covering stock and `isFeatured`
-
-If you are using Docker Compose, keep Compose running and set your local `.env` `MONGODB_URI` to `mongodb://localhost:27017/api_starter` before running the seed from your host machine.
 
 ## Response shape
 
@@ -224,8 +218,6 @@ If you are using Docker Compose, keep Compose running and set your local `.env` 
 }
 ```
 
-Stack traces are included in non-production environments only and never exposed in production.
-
 ## Development
 
 ### Adding new features
@@ -236,35 +228,11 @@ Use `src/api/product/` as the reference module for CRUD routes, Zod validation, 
 
 Layer responsibilities and coding conventions are in [ARCHITECTURE.md](./ARCHITECTURE.md).
 
-### AI-assisted development
-
-This project includes configuration files for AI coding assistants:
-
-| Tool         | File                                 |
-| ------------ | ------------------------------------ |
-| Claude Code  | [`CLAUDE.md`](./CLAUDE.md)           |
-| OpenAI Codex | [`AGENTS.md`](./AGENTS.md)           |
-| Cursor       | [`.cursor/rules/`](./.cursor/rules/) |
-
-These files point to [ARCHITECTURE.md](./ARCHITECTURE.md) so generated changes follow the same project conventions.
-
 ## Testing
 
 The test setup uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models so CI does not require a live database.
 
-```bash
-npm run typecheck
-npm test
-npm run test:coverage
-```
-
 Husky runs `npm run validate` automatically on each commit to keep lint and formatting clean.
-
-## Trade-offs
-
-This starter keeps the example domain small on purpose. The product module is enough to show validation, protected writes, repository-backed persistence, cursor pagination, filters, defaults, and one service-level rule: active products must be archived before deletion.
-
-Use it as a base and add your own domain modules under `src/api/`.
 
 ## License
 

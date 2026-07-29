@@ -1,6 +1,8 @@
 # Architecture
 
-This document explains how the project is organized and how to extend it without breaking the existing conventions.
+This document explains the structure, boundaries, and main trade-offs of this starter.
+
+The example domain is intentionally small. Auth and products demonstrate validation, protected routes, business rules, persistence, testing, and operations without turning the starter into a complete business application.
 
 ## Stack
 
@@ -62,6 +64,18 @@ The product module is the main example feature. It includes public reads, protec
 
 Product write routes require authentication, but they do not enforce ownership or roles. Add those checks in the service layer when the application domain needs them.
 
+## Key trade-offs
+
+| Decision                         | Why now                                                                  | Revisit when                                                 |
+| -------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| MongoDB + Mongoose               | Simple local setup and productive document modeling.                     | Relations, reporting, or multi-entity transactions dominate. |
+| Repository layer                 | Keeps Mongoose and query strategy out of services.                       | A very small feature does not justify the extra boundary.    |
+| JWT + active-user lookup         | Disabled users lose access without waiting for token expiry.             | The lookup becomes an observed authentication bottleneck.    |
+| Authentication without ownership | Demonstrates protected routes without inventing an authorization domain. | The product defines ownership or role requirements.          |
+| Cursor pagination                | Stable indexed traversal without offset scans.                           | Consumers need arbitrary page jumps or total counts.         |
+| In-memory rate limiting          | Adds baseline abuse protection without another operational dependency.   | The API runs on multiple replicas or needs shared quotas.    |
+| Mocked Mongoose tests            | Keeps most HTTP tests fast and deterministic.                            | Persistence behavior needs broader real-database coverage.   |
+
 ## Layer responsibilities and data flow
 
 ```
@@ -77,6 +91,25 @@ router → controller → service → repository → model
 | `model`      | Schema definition, indexes, `toJSON` transforms                      | Contain query logic            |
 
 Controllers never access the database directly. Services never reference Express objects or Mongoose APIs directly.
+
+## Request lifecycle
+
+A typical protected request follows this path:
+
+```text
+HTTP request
+  → security headers and request ID
+  → structured HTTP logging
+  → optional CORS and global rate limiting
+  → JSON body limit
+  → router
+  → authentication and route-specific rate limiting
+  → request validation
+  → controller → service → repository → model
+  → response or centralized error handler
+```
+
+Cross-cutting HTTP behavior stays in middleware. Business rules stay in services, and database-specific behavior stays in repositories and models.
 
 ## Request validation
 
@@ -122,31 +155,21 @@ API details live in `openapi.yaml`. Update it when routes, validation schemas, o
 
 ## Error handling
 
-Typed error factories live in `src/errors.ts`:
-
-```js
-throw BadRequestError("Invalid input");
-throw UnauthorizedError("Token expired", "TOKEN_EXPIRED");
-throw NotFoundError("Product not found");
-```
-
-Errors propagate to `errorGenericHandler` via `next(err)` or through `asyncHandler`, which catches promise rejections automatically.
-
-JWT errors distinguish between `TOKEN_EXPIRED` and `INVALID_TOKEN` so clients can handle refresh flows correctly.
+Errors are resolved centrally into stable JSON responses. Validation, authentication,
+not-found, and unexpected failures use distinct status codes and error codes.
+Production responses never expose stack traces or internal error details.
 
 ## Authentication
 
-Protected routes use `authenticate`. It validates `Authorization: Bearer <token>`, verifies the JWT with HS256, checks that the user still exists and is active, and then attaches the decoded payload to `req.user`.
+Protected routes require a Bearer JWT. Authentication verifies the token and confirms that the user still exists and is active before attaching the identity to the request.
 
-JWTs are still stateless. The active-user check gives the API a simple way to disable access after a user is deactivated, without adding token blacklists, refresh-token storage, or session tracking.
+The starter demonstrates route protection, not a complete identity system. Ownership, roles, refresh tokens, recovery, and session management belong to the application built from it.
 
-Public and protected routes are declared explicitly in each router — no global auth applied by default.
-
-Auth endpoints (`/signup`, `/login`) apply a fixed rate limit (10 requests per 15 minutes per IP). This is intentionally not configurable — it is a security control, not an operational parameter.
+Public and protected routes are declared explicitly in each router. Authentication endpoints apply a fixed per-IP rate limit.
 
 ## Environment configuration
 
-All environment variables are declared and validated at startup with Zod in `src/config.ts`. Required variables (`MONGODB_URI`, `JWT_SECRET`) cause an immediate process exit if missing or invalid. Feature code imports named constants from `config.ts` — never reads `process.env` directly.
+Zod validates all environment variables at startup. Required values fail fast, and feature code imports typed values from `config.ts` instead of reading `process.env`.
 
 ## Logging
 
@@ -166,25 +189,33 @@ The product collection has a compound index on `{ status: 1, isFeatured: 1, _id:
 
 - Test suites use `Feature:` descriptions and test cases use `Then` descriptions to keep the scenarios readable in a lightweight BDD style.
 - Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`
-- HTTP behavior is tested end-to-end via Supertest against the real Express app
-- Mongoose is mocked at the model level (`src/tests/mongoose-mock.ts`) to avoid requiring a live database in CI
-- Every feature covers: happy path, validation failures, auth failures, not-found cases, and DB error paths
+- HTTP behavior is exercised through Supertest against the real Express app.
+- Mongoose is mocked at the model level (`src/tests/mongoose-mock.ts`) to keep most tests fast and deterministic without a live database in CI.
+- Feature tests should cover the relevant happy path, validation failures, auth failures, not-found cases, and database error paths.
 
-## Docker
+## Known limitations
 
-The Dockerfile uses a two-stage build:
+- Product writes require authentication but do not enforce ownership or roles.
+- JWTs do not include refresh-token rotation or individual token revocation.
+- Rate limiting is process-local and is not suitable for multiple replicas.
+- The active-user lookup adds one persistence read to authenticated requests.
+- `price` is a simple number for the reference product; real monetary values should use integer minor units and an ISO currency code.
+- The starter has request correlation in logs, but no distributed tracing, metrics, dashboards, or alerts.
+- There are no domain workflows such as orders, payments, subscriptions, or multi-tenancy.
 
-1. **build** — installs dependencies, compiles TypeScript to `dist/`, then prunes dev dependencies
-2. **production** — copies compiled output and production dependencies, runs as a non-root user (`appuser`)
+## Production considerations
 
-This keeps the final image minimal and avoids running as root in production.
+When using this starter for a production application, define the following according to its domain and deployment model:
 
-The server handles `SIGTERM` and `SIGINT` in `index.ts`. It stops accepting new HTTP connections, waits for active requests to finish, closes MongoDB, and exits. A 10-second timeout forces the process to stop if shutdown does not complete.
+- Ownership, roles, or permissions for protected resources.
+- Refresh tokens, token rotation, or another session strategy.
+- Shared rate limiting for multi-replica deployments.
+- Metrics, distributed tracing, dashboards, and alerting.
+- Secret management and key rotation.
+- MongoDB backup, replica-set, and recovery policies.
+- API versioning and deprecation rules.
+- Database operation timeouts and resource limits.
 
-## Adding a new feature
+## Container runtime
 
-1. Create `src/api/{feature}/` with the files listed in the feature module pattern above
-2. Register the router in `src/router.ts`
-3. Add environment variables to `src/config.ts` if needed
-4. Write tests covering the HTTP behavior
-5. Run `npm run validate && npm run typecheck && npm test` before committing
+The Docker image uses a multi-stage build and runs as a non-root user. On `SIGTERM` or `SIGINT`, the server stops accepting requests, closes MongoDB connections, and exits after active work finishes or the shutdown timeout is reached.
