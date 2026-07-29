@@ -21,14 +21,14 @@ beforeEach(() => next.mockClear());
 
 const schema = z.object({ name: z.string() });
 
-describe("validate (body)", () => {
-    it("calls next with no error when body is valid", () => {
+describe("Feature: validate (body)", () => {
+    it("Then calls next with no error when body is valid", () => {
         const req = { body: { name: "test" } } as unknown as Request;
         validate(schema)(req, makeRes(), next);
         expect(next).toHaveBeenCalledWith();
     });
 
-    it("calls next with BadRequestError when body is invalid", () => {
+    it("Then calls next with BadRequestError when body is invalid", () => {
         const req = { body: {} } as unknown as Request;
         validate(schema)(req, makeRes(), next);
         const err = next.mock.calls[0]?.[0] as { statusCode: number; details: unknown[] };
@@ -36,7 +36,7 @@ describe("validate (body)", () => {
         expect(err.details).toBeInstanceOf(Array);
     });
 
-    it("handles missing body gracefully", () => {
+    it("Then handles missing body gracefully", () => {
         const req = {} as unknown as Request;
         validate(schema)(req, makeRes(), next);
         const err = next.mock.calls[0]?.[0] as { statusCode: number };
@@ -44,16 +44,16 @@ describe("validate (body)", () => {
     });
 });
 
-describe("validateParams", () => {
+describe("Feature: validateParams", () => {
     const paramSchema = z.object({ id: z.string() });
 
-    it("calls next with no error when params are valid", () => {
+    it("Then calls next with no error when params are valid", () => {
         const req = { params: { id: "abc123" } } as unknown as Request;
         validateParams(paramSchema)(req, makeRes(), next);
         expect(next).toHaveBeenCalledWith();
     });
 
-    it("calls next with BadRequestError when params are invalid", () => {
+    it("Then calls next with BadRequestError when params are invalid", () => {
         const req = { params: {} } as unknown as Request;
         validateParams(paramSchema)(req, makeRes(), next);
         const err = next.mock.calls[0]?.[0] as { statusCode: number; details: unknown[] };
@@ -61,7 +61,7 @@ describe("validateParams", () => {
         expect(err.details).toBeInstanceOf(Array);
     });
 
-    it("handles missing params gracefully", () => {
+    it("Then handles missing params gracefully", () => {
         const req = {} as unknown as Request;
         validateParams(paramSchema)(req, makeRes(), next);
         const err = next.mock.calls[0]?.[0] as { statusCode: number };
@@ -69,13 +69,13 @@ describe("validateParams", () => {
     });
 });
 
-describe("validateQuery", () => {
+describe("Feature: validateQuery", () => {
     const querySchema = z.object({
         page: z.coerce.number().int().min(1).default(1),
         limit: z.coerce.number().int().min(1).max(100).default(10),
     });
 
-    it("calls next with no error and sets req.validatedQuery when query is valid", () => {
+    it("Then calls next with no error and sets req.validatedQuery when query is valid", () => {
         const req = { query: { page: "2", limit: "5" } } as unknown as Request;
         validateQuery(querySchema)(req, makeRes(), next);
         expect(next).toHaveBeenCalledWith();
@@ -85,7 +85,7 @@ describe("validateQuery", () => {
         });
     });
 
-    it("applies defaults when query is empty", () => {
+    it("Then applies defaults when query is empty", () => {
         const req = { query: {} } as unknown as Request;
         validateQuery(querySchema)(req, makeRes(), next);
         expect(next).toHaveBeenCalledWith();
@@ -95,7 +95,7 @@ describe("validateQuery", () => {
         });
     });
 
-    it("calls next with BadRequestError when query is invalid", () => {
+    it("Then calls next with BadRequestError when query is invalid", () => {
         const req = { query: { page: "0" } } as unknown as Request;
         validateQuery(querySchema)(req, makeRes(), next);
         const err = next.mock.calls[0]?.[0] as { statusCode: number; details: unknown[] };
@@ -103,7 +103,7 @@ describe("validateQuery", () => {
         expect(err.details).toBeInstanceOf(Array);
     });
 
-    it("handles missing query gracefully", () => {
+    it("Then handles missing query gracefully", () => {
         const req = {} as unknown as Request;
         validateQuery(querySchema)(req, makeRes(), next);
         expect(next).toHaveBeenCalledWith();

@@ -17,7 +17,7 @@ function makeRes(): MockRes {
 const req = {} as unknown as Request;
 const next = vi.fn();
 
-describe("errorGenericHandler", () => {
+describe("Feature: errorGenericHandler", () => {
     const originalEnv = process.env.NODE_ENV;
 
     afterEach(() => {
@@ -25,7 +25,7 @@ describe("errorGenericHandler", () => {
         vi.resetModules();
     });
 
-    it("returns 500 INTERNAL_SERVER_ERROR when the error is null", () => {
+    it("Then returns 500 INTERNAL_SERVER_ERROR when the error is null", () => {
         const res = makeRes();
         errorGenericHandler(null, req, res, next);
         expect(res.status).toHaveBeenCalledWith(500);
@@ -34,13 +34,13 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    it("returns 500 when the error is a plain string", () => {
+    it("Then returns 500 when the error is a plain string", () => {
         const res = makeRes();
         errorGenericHandler("something broke", req, res, next);
         expect(res.status).toHaveBeenCalledWith(500);
     });
 
-    it("reflects the status code and code from a typed app error", () => {
+    it("Then reflects the status code and code from a typed app error", () => {
         const res = makeRes();
         const err = { statusCode: 404, code: "NotFoundError", message: "Not found" };
         errorGenericHandler(err, req, res, next);
@@ -50,14 +50,14 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    it("falls back to 'Error' code when the app error has no code field", () => {
+    it("Then falls back to 'Error' code when the app error has no code field", () => {
         const res = makeRes();
         const err = { statusCode: 400, message: "Bad input" };
         errorGenericHandler(err, req, res, next);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: "Error" }));
     });
 
-    it("maps a Mongoose CastError to 400 with a safe message", () => {
+    it("Then maps a Mongoose CastError to 400 with a safe message", () => {
         const res = makeRes();
         const err = new Error("Cast failed");
         err.name = "CastError";
@@ -71,7 +71,7 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    it("maps a Mongoose ValidationError to 400", () => {
+    it("Then maps a Mongoose ValidationError to 400", () => {
         const res = makeRes();
         const err = new Error("Validation failed");
         err.name = "ValidationError";
@@ -82,7 +82,7 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    it("includes the details array when present on the error", () => {
+    it("Then includes the details array when present on the error", () => {
         const res = makeRes();
         const err = {
             statusCode: 400,
@@ -96,7 +96,7 @@ describe("errorGenericHandler", () => {
         );
     });
 
-    it("omits details when the value is not an array", () => {
+    it("Then omits details when the value is not an array", () => {
         const res = makeRes();
         const err = {
             statusCode: 400,
@@ -109,7 +109,7 @@ describe("errorGenericHandler", () => {
         expect(body).not.toHaveProperty("details");
     });
 
-    it("includes the stack trace in non-production environments", async () => {
+    it("Then includes the stack trace in non-production environments", async () => {
         process.env.NODE_ENV = "development";
         const { errorGenericHandler } = await import("./errorMiddleware.js");
         const res = makeRes();
@@ -118,7 +118,7 @@ describe("errorGenericHandler", () => {
         expect(body).toHaveProperty("stack");
     });
 
-    it("hides the message and stack in production for 5xx errors", async () => {
+    it("Then hides the message and stack in production for 5xx errors", async () => {
         process.env.NODE_ENV = "production";
         const { errorGenericHandler } = await import("./errorMiddleware.js");
         const res = makeRes();

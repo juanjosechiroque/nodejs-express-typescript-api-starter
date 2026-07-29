@@ -164,6 +164,7 @@ The product collection has a compound index on `{ status: 1, isFeatured: 1, _id:
 
 ## Testing approach
 
+- Test suites use `Feature:` descriptions and test cases use `Then` descriptions to keep the scenarios readable in a lightweight BDD style.
 - Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`
 - HTTP behavior is tested end-to-end via Supertest against the real Express app
 - Mongoose is mocked at the model level (`src/tests/mongoose-mock.ts`) to avoid requiring a live database in CI

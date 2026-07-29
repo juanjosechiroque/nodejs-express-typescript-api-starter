@@ -72,6 +72,10 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/AuthResponse"
+                            example:
+                                status: 201
+                                message: success
+                                data: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                 "400":
                     $ref: "#/components/responses/BadRequest"
 
@@ -97,6 +101,10 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/AuthResponse"
+                            example:
+                                status: 200
+                                message: success
+                                data: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                 "400":
                     $ref: "#/components/responses/BadRequest"
                 "401":
@@ -328,6 +336,12 @@ components:
         HealthResponse:
             type: object
             required: [status, uptime, timestamp, services]
+            example:
+                status: healthy
+                uptime: 42.3
+                timestamp: "2026-07-11T12:00:00.000Z"
+                services:
+                    db: connected
             properties:
                 status:
                     type: string
@@ -348,6 +362,9 @@ components:
         AuthRequest:
             type: object
             required: [email, password]
+            example:
+                email: demo@example.com
+                password: DemoPassword123!
             properties:
                 email:
                     type: string
@@ -359,6 +376,10 @@ components:
         AuthResponse:
             type: object
             required: [status, message, data]
+            example:
+                status: 200
+                message: success
+                data: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
             properties:
                 status:
                     type: integer
@@ -374,6 +395,16 @@ components:
 
         Product:
             type: object
+            example:
+                _id: 507f1f77bcf86cd799439011
+                name: Starter Tee
+                description: Basic product example
+                price: 29.99
+                stock: 50
+                status: active
+                isFeatured: true
+                createdAt: "2026-07-11T12:00:00.000Z"
+                updatedAt: "2026-07-11T12:00:00.000Z"
             properties:
                 _id:
                     type: string
@@ -401,6 +432,13 @@ components:
         CreateProductRequest:
             type: object
             required: [name, price]
+            example:
+                name: Starter Tee
+                description: Basic product example
+                price: 29.99
+                stock: 50
+                status: draft
+                isFeatured: false
             properties:
                 name:
                     type: string
@@ -423,6 +461,8 @@ components:
             type: object
             minProperties: 1
             description: At least one field must be provided.
+            example:
+                status: archived
             properties:
                 name:
                     type: string
@@ -442,6 +482,10 @@ components:
         Pagination:
             type: object
             required: [limit, nextCursor, hasMore]
+            example:
+                limit: 10
+                nextCursor: 507f1f77bcf86cd799439011
+                hasMore: true
             properties:
                 limit:
                     type: integer
@@ -465,6 +509,15 @@ components:
         ProductListResponse:
             type: object
             required: [status, message, data]
+            example:
+                status: 200
+                message: success
+                data:
+                    items: []
+                    pagination:
+                        limit: 10
+                        nextCursor: null
+                        hasMore: false
             properties:
                 status:
                     type: integer
@@ -495,6 +548,13 @@ components:
         ErrorResponse:
             type: object
             required: [status, code, message]
+            example:
+                status: 400
+                code: BadRequestError
+                message: Validation failed
+                details:
+                    - field: price
+                      error: "Too small: expected number to be >0"
             properties:
                 status:
                     type: integer
