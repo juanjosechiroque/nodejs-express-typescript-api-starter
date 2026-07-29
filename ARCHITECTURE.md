@@ -19,7 +19,7 @@ The example domain is intentionally small. Auth and products demonstrate validat
 | CI/CD            | GitHub Actions                       |
 | Code quality     | ESLint + Prettier + Husky pre-commit |
 
-## Project structure
+## Project structure and feature pattern
 
 ```
 src/
@@ -39,7 +39,7 @@ src/database.ts           # MongoDB connection
 src/errors.ts             # Typed error factories
 ```
 
-## Feature module pattern
+### Feature modules
 
 Each domain feature is self-contained in `src/api/{feature}/`:
 
@@ -56,7 +56,7 @@ Each domain feature is self-contained in `src/api/{feature}/`:
 
 Support modules without HTTP endpoints omit `router` and `controller` until routes are needed.
 
-## Feature scope
+## Reference feature scope
 
 Auth only exposes signup and login. That is enough for the starter to issue JWTs and protect routes without turning the user module into a full account-management feature. The user module stays internal and handles credentials, password hashing, user status, and email lookup.
 
@@ -76,7 +76,7 @@ Product write routes require authentication, but they do not enforce ownership o
 | In-memory rate limiting          | Adds baseline abuse protection without another operational dependency.   | The API runs on multiple replicas or needs shared quotas.    |
 | Mocked Mongoose tests            | Keeps most HTTP tests fast and deterministic.                            | Persistence behavior needs broader real-database coverage.   |
 
-## Layer responsibilities and data flow
+## System design
 
 ```
 router → controller → service → repository → model
@@ -92,7 +92,7 @@ router → controller → service → repository → model
 
 Controllers never access the database directly. Services never reference Express objects or Mongoose APIs directly.
 
-## Request lifecycle
+### Request lifecycle
 
 A typical protected request follows this path:
 
@@ -111,7 +111,9 @@ HTTP request
 
 Cross-cutting HTTP behavior stays in middleware. Business rules stay in services, and database-specific behavior stays in repositories and models.
 
-## Request validation
+## HTTP conventions
+
+### Request validation
 
 Validation uses Zod middleware applied at the router level before the controller runs:
 
@@ -130,7 +132,7 @@ Keep small business rules in the service layer. Example: active products must be
 
 Validation errors return `400` with a `details` array identifying each failing field.
 
-## Response shape
+### Response shape
 
 All successful responses use `sendResponse()`:
 
@@ -149,17 +151,19 @@ All error responses flow through the centralized `errorGenericHandler` middlewar
 
 Stack traces and internal error details are never exposed in production.
 
-## API contract
+### API contract
 
 API details live in `openapi.yaml`. Update it when routes, validation schemas, or response shapes change.
 
-## Error handling
+### Error handling
 
 Errors are resolved centrally into stable JSON responses. Validation, authentication,
 not-found, and unexpected failures use distinct status codes and error codes.
 Production responses never expose stack traces or internal error details.
 
-## Authentication
+## Authentication and configuration
+
+### Authentication
 
 Protected routes require a Bearer JWT. Authentication verifies the token and confirms that the user still exists and is active before attaching the identity to the request.
 
@@ -167,17 +171,23 @@ The starter demonstrates route protection, not a complete identity system. Owner
 
 Public and protected routes are declared explicitly in each router. Authentication endpoints apply a fixed per-IP rate limit.
 
-## Environment configuration
+### Environment configuration
 
 Zod validates all environment variables at startup. Required values fail fast, and feature code imports typed values from `config.ts` instead of reading `process.env`.
 
-## Logging
+## Operational defaults
+
+### Logging
 
 Logging uses [Pino](https://getpino.io). Use `src/utils/logger.ts` instead of `console.log`.
 
 In development, `pino-pretty` formats the output. In production, logs are written as JSON to stdout. HTTP request logs are handled by `pino-http` and include method, URL, status, response time, and request ID. `LOG_LEVEL` controls verbosity (default: `info`).
 
-## Pagination
+### Container runtime
+
+The Docker image uses a multi-stage build and runs as a non-root user. On `SIGTERM` or `SIGINT`, the server stops accepting requests, closes MongoDB connections, and exits after active work finishes or the shutdown timeout is reached.
+
+## Persistence and pagination
 
 List endpoints use cursor pagination over `_id` instead of `skip`. This keeps pagination stable when new documents are inserted and avoids scanning through all previous pages.
 
@@ -185,7 +195,7 @@ The trade-off is that arbitrary page jumps and total counts are not included by 
 
 The product collection has a compound index on `{ status: 1, isFeatured: 1, _id: 1 }`. This supports the common list query: filter by `status`/`isFeatured` and continue from the cursor.
 
-## Testing approach
+## Testing
 
 - Test suites use `Feature:` descriptions and test cases use `Then` descriptions to keep the scenarios readable in a lightweight BDD style.
 - Tests live next to the feature they cover: `src/api/{feature}/{feature}.test.ts`
@@ -215,7 +225,3 @@ When using this starter for a production application, define the following accor
 - MongoDB backup, replica-set, and recovery policies.
 - API versioning and deprecation rules.
 - Database operation timeouts and resource limits.
-
-## Container runtime
-
-The Docker image uses a multi-stage build and runs as a non-root user. On `SIGTERM` or `SIGINT`, the server stops accepting requests, closes MongoDB connections, and exits after active work finishes or the shutdown timeout is reached.

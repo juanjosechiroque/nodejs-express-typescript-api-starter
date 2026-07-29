@@ -1,80 +1,31 @@
 ---
-description: Architecture and coding rules for this Express 5 + MongoDB API. Full reference in ARCHITECTURE.md.
+description: Architecture boundaries for this Express 5 + MongoDB API. Full reference in ARCHITECTURE.md.
 alwaysApply: true
 ---
 
 # Architecture Rules
 
-Full reference: `ARCHITECTURE.md` at the project root. These rules are the actionable subset for AI-assisted development.
+Read `ARCHITECTURE.md` before making structural changes. These rules are the non-negotiable boundaries for generated code.
 
-## Stack
+## Boundaries
 
-Node.js 24 ESM · TypeScript · Express 5 · Mongoose 8 · JWT · Zod · Vitest + Supertest · Docker · GitHub Actions
-
-## Layer flow — never skip or reverse
-
-```
+```text
 router → controller → service → repository → model
 ```
 
-- **router**: routes + middleware only. Always wrap handlers: `asyncHandler(handler)`.
-- **controller**: reads `req`, calls one service function, sends response with `sendResponse(res, status, data, message)`. No DB access ever.
-- **service**: business logic only. Never import `req`, `res`, `next`, or Mongoose APIs.
-- **repository**: persistence operations and query strategy. Use `.lean()` on read queries. No business logic.
-- **model**: schema, indexes, `toJSON` transform. No query logic.
+- Routers attach middleware and wrap handlers with `asyncHandler`.
+- Controllers translate HTTP only; they do not access the database.
+- Services hold business rules and never import Express or Mongoose APIs.
+- Repositories own Mongoose queries and use `.lean()` for reads.
+- Keep feature-specific code under `src/api/{feature}/`; do not create global feature-layer folders.
 
-## When generating a new feature
+## Contracts and configuration
 
-Create files under `src/api/{feature}/` following this pattern:
+- Validate request input with Zod before controllers run.
+- Use error factories and the centralized error handler; do not send ad hoc errors from controllers.
+- Update `openapi.yaml` when routes, validation, or response shapes change.
+- Add environment variables through `src/config.ts`; update `.env.example` and affected Docker Compose or README documentation.
 
-```
-{feature}.router.ts
-{feature}.controller.ts
-{feature}.service.ts
-{feature}.validation.ts   # Zod schemas
-{feature}.repository.ts   # Persistence operations
-{feature}.model.ts        # Schema + model
-{feature}.types.ts        # Feature input/output types when useful
-{feature}.test.ts         # Vitest unit or HTTP behavior tests
-```
+## Testing
 
-Register the router in `src/router.ts`. Never create global `controllers/`, `services/`, or `models/` folders.
-
-Keep the starter intentionally small. The current `product` feature is a reference module for CRUD, auth-protected writes, Zod validation, pagination, simple query filters, layering, and tests — not a full product domain.
-
-Product rules are deliberately minimal: products have `price`, `stock`, `status` (`draft`, `active`, `archived`), and `isFeatured`; active products must be archived before deletion. Keep this kind of business rule in the service layer.
-
-## Errors
-
-Always use factories from `src/errors.ts`:
-
-```ts
-throw BadRequestError("message");
-throw UnauthorizedError("message", "ERROR_CODE");
-throw NotFoundError("message");
-```
-
-Never `res.status(400).json(...)` directly from a controller. Let errors propagate to `errorGenericHandler`.
-
-## Validation
-
-Apply Zod middleware at the router before the controller:
-
-```ts
-router.post("/", validate(schema), asyncHandler(handler));           // body
-router.get("/:id", validateParams(idSchema), asyncHandler(handler)); // params
-router.get("/", validateQuery(querySchema), asyncHandler(handler));  // query → req.validatedQuery
-```
-
-## Environment variables
-
-Declare and validate with Zod in `src/config.ts`. Never read `process.env` directly in feature code.
-
-## DO NOT
-
-- Access the database from a controller or service
-- Use `process.env` outside `src/config.ts`
-- Add Express objects (`req`, `res`, `next`) to a service
-- Create files outside `src/api/{feature}/` for feature-specific code
-- Return raw Mongoose documents from a repository on read queries (use `.lean()`)
-- Change routes, validation schemas, or response shapes without updating `openapi.yaml`
+Use the existing lightweight BDD naming style: `Feature:` for suites and `Then` for test cases. Use Supertest for HTTP behavior tests. Keep Mongoose mocked unless the change specifically requires persistence integration coverage.
