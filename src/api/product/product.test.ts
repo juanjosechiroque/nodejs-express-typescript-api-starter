@@ -252,7 +252,7 @@ describe("API: POST /v1/products", () => {
     });
 });
 
-describe("API: PUT /v1/products/:id", () => {
+describe("API: PATCH /v1/products/:id", () => {
     describe("Given the API is available", () => {
         it("When the request is sent, then returns the updated product", async () => {
             const data = {
@@ -267,7 +267,7 @@ describe("API: PUT /v1/products/:id", () => {
                 .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(data) });
 
             const response = await api
-                .put(`${V1}/products/${validMongoId}`)
+                .patch(`${V1}/products/${validMongoId}`)
                 .set("Authorization", "Bearer valid-token")
                 .send(data);
 
@@ -285,7 +285,7 @@ describe("API: PUT /v1/products/:id", () => {
 
         it("When the request is sent, then returns 400 when the request body is empty", async () => {
             const response = await api
-                .put(`${V1}/products/${validMongoId}`)
+                .patch(`${V1}/products/${validMongoId}`)
                 .set("Authorization", "Bearer valid-token");
 
             expect(response.status).toBe(400);
@@ -294,7 +294,7 @@ describe("API: PUT /v1/products/:id", () => {
 
         it("When the request is sent, then returns 400 when the id is not a valid MongoDB ObjectId", async () => {
             const response = await api
-                .put(`${V1}/products/invalid-id`)
+                .patch(`${V1}/products/invalid-id`)
                 .set("Authorization", "Bearer valid-token")
                 .send({ name: "updated", price: 20 });
 
@@ -308,7 +308,7 @@ describe("API: PUT /v1/products/:id", () => {
                 .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(null) });
 
             const response = await api
-                .put(`${V1}/products/${validMongoId}`)
+                .patch(`${V1}/products/${validMongoId}`)
                 .set("Authorization", "Bearer valid-token")
                 .send({ name: "updated", price: 20 });
 
