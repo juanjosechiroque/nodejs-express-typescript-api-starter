@@ -15,9 +15,7 @@ const productSchema = new Schema(
         isFeatured: { type: Boolean, required: true, default: false, index: true },
         description: { type: String },
     },
-    {
-        timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
-    }
+    { timestamps: true, versionKey: false }
 );
 
 productSchema.index({ status: 1, isFeatured: 1, _id: 1 });
@@ -26,6 +24,8 @@ const Product = model("Product", productSchema, "products");
 
 export type ProductDocument = InferSchemaType<typeof productSchema> & {
     _id: { toString: () => string };
+    createdAt: Date;
+    updatedAt: Date;
 };
 
 export default Product;

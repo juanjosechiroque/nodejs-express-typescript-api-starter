@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const mongoIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid id format");
+const booleanQuerySchema = z.enum(["true", "false"]).transform((value) => value === "true");
 export const productStatusSchema = z.enum(["draft", "active", "archived"]);
 
 export const productIdParamSchema = z.object({
@@ -12,7 +13,7 @@ export const createProductSchema = z.object({
     price: z.coerce.number().positive(),
     stock: z.coerce.number().int().min(0).default(0),
     status: productStatusSchema.default("draft"),
-    isFeatured: z.coerce.boolean().default(false),
+    isFeatured: z.boolean().default(false),
     description: z.string().optional(),
 });
 
@@ -22,7 +23,7 @@ export const updateProductSchema = z
         price: z.coerce.number().positive().optional(),
         stock: z.coerce.number().int().min(0).optional(),
         status: productStatusSchema.optional(),
-        isFeatured: z.coerce.boolean().optional(),
+        isFeatured: z.boolean().optional(),
         description: z.string().optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
@@ -33,5 +34,5 @@ export const listProductsQuerySchema = z.object({
     limit: z.coerce.number().int().min(1).max(100).default(10),
     cursor: mongoIdSchema.optional(),
     status: productStatusSchema.optional(),
-    isFeatured: z.coerce.boolean().optional(),
+    isFeatured: booleanQuerySchema.optional(),
 });

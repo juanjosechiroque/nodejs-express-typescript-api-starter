@@ -33,6 +33,8 @@ describe("API: POST /v1/auth/signup", () => {
 
             expect(response.status).toBe(201);
             expect(response.body.data).toBe("valid-token");
+            expect(response.headers.ratelimit).toMatch(/limit=10, remaining=9, reset=\d+/);
+            expect(response.headers["ratelimit-policy"]).toBe("10;w=900");
         });
 
         it("When the request is sent, then returns 400 when the email is already registered", async () => {

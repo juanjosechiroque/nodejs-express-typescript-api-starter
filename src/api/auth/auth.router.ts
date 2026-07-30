@@ -10,7 +10,7 @@ const router = Router();
 const authRateLimit = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 10,
-    standardHeaders: true,
+    standardHeaders: "draft-7",
     legacyHeaders: false,
     handler: (req, res) => {
         res.status(429).json({

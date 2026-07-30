@@ -28,6 +28,9 @@ describe("API: GET /v1/products", () => {
             expect(response.body.data).toHaveProperty("items");
             expect(response.body.data).toHaveProperty("pagination");
             expect(response.body.data.items).toHaveLength(2);
+            expect(response.body.data.items[0]).toMatchObject({ id: "aaa", name: "Product 1" });
+            expect(response.body.data.items[0]).not.toHaveProperty("_id");
+            expect(response.body.data.items[0]).not.toHaveProperty("__v");
             expect(response.body.data.pagination).toMatchObject({
                 limit: 10,
                 hasMore: false,
@@ -72,6 +75,23 @@ describe("API: GET /v1/products", () => {
             });
         });
 
+        it("When isFeatured is false, then filters by false", async () => {
+            mockMongoose.model("Product").find.mockReturnValueOnce(makeFindChain([]));
+
+            const response = await api.get(`${V1}/products?isFeatured=false`);
+
+            expect(response.status).toBe(200);
+            expect(mockMongoose.model("Product").find).toHaveBeenCalledWith({
+                isFeatured: false,
+            });
+        });
+
+        it("When isFeatured is not true or false, then returns 400", async () => {
+            const response = await api.get(`${V1}/products?isFeatured=0`);
+
+            expect(response.status).toBe(400);
+        });
+
         it("When the request is sent, then returns 400 when the cursor format is invalid", async () => {
             const response = await api.get(`${V1}/products?cursor=invalid`);
             expect(response.status).toBe(400);
@@ -109,6 +129,8 @@ describe("API: GET /v1/products/:id", () => {
             expect(response.status).toBe(200);
             expect(response.body.data.name).toBe(productMock.name);
             expect(response.body.data.price).toBe(productMock.price);
+            expect(response.body.data).toHaveProperty("id", validMongoId);
+            expect(response.body.data).not.toHaveProperty("_id");
         });
 
         it("When the request is sent, then returns 404 when the product does not exist", async () => {
@@ -144,6 +166,7 @@ describe("API: POST /v1/products", () => {
 
             expect(response.status).toBe(201);
             expect(response.body.data).toMatchObject({
+                id: validMongoId,
                 name: data.name,
                 price: data.price,
                 stock: data.stock,
@@ -232,7 +255,13 @@ describe("API: POST /v1/products", () => {
 describe("API: PUT /v1/products/:id", () => {
     describe("Given the API is available", () => {
         it("When the request is sent, then returns the updated product", async () => {
-            const data = { name: "updated", price: 20, stock: 12, status: "archived" };
+            const data = {
+                _id: validMongoId,
+                name: "updated",
+                price: 20,
+                stock: 12,
+                status: "archived",
+            };
             mockMongoose
                 .model("Product")
                 .findByIdAndUpdate.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(data) });
@@ -243,7 +272,15 @@ describe("API: PUT /v1/products/:id", () => {
                 .send(data);
 
             expect(response.status).toBe(200);
-            expect(response.body.data).toMatchObject(data);
+            expect(response.body.data).toMatchObject({
+                id: validMongoId,
+                name: data.name,
+                price: data.price,
+                stock: data.stock,
+                status: data.status,
+            });
+            expect(response.body.data).not.toHaveProperty("_id");
+            expect(response.body.data).not.toHaveProperty("__v");
         });
 
         it("When the request is sent, then returns 400 when the request body is empty", async () => {
@@ -290,17 +327,23 @@ describe("API: DELETE /v1/products/:id", () => {
                 price: 100,
                 status: "archived",
             };
-            mockMongoose.model("Product").findOneAndDelete.mockResolvedValueOnce(productMock);
+            mockMongoose.model("Product").findOneAndDelete.mockReturnValueOnce({
+                lean: vi.fn().mockResolvedValue(productMock),
+            });
 
             const response = await api
                 .delete(`${V1}/products/${validMongoId}`)
                 .set("Authorization", "Bearer valid-token");
 
             expect(response.status).toBe(200);
+            expect(response.body.data).toHaveProperty("id", validMongoId);
+            expect(response.body.data).not.toHaveProperty("_id");
         });
 
         it("When the request is sent, then returns 400 when the product is active", async () => {
-            mockMongoose.model("Product").findOneAndDelete.mockResolvedValueOnce(null);
+            mockMongoose.model("Product").findOneAndDelete.mockReturnValueOnce({
+                lean: vi.fn().mockResolvedValue(null),
+            });
             mockMongoose.model("Product").findById.mockReturnValueOnce({
                 lean: vi.fn().mockResolvedValue({ _id: validMongoId, status: "active" }),
             });
@@ -326,7 +369,9 @@ describe("API: DELETE /v1/products/:id", () => {
         });
 
         it("When the request is sent, then returns 404 when the product does not exist", async () => {
-            mockMongoose.model("Product").findOneAndDelete.mockResolvedValueOnce(null);
+            mockMongoose.model("Product").findOneAndDelete.mockReturnValueOnce({
+                lean: vi.fn().mockResolvedValue(null),
+            });
             mockMongoose
                 .model("Product")
                 .findById.mockReturnValueOnce({ lean: vi.fn().mockResolvedValue(null) });

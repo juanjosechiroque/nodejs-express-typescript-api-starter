@@ -20,5 +20,17 @@ describe("API: request ID tracing", () => {
             expect(response.headers["x-request-id"]).toBeDefined();
             expect(response.headers["x-request-id"]).toMatch(UUID_REGEX);
         });
+
+        it("When the client-provided x-request-id is invalid, then generates a UUID", async () => {
+            const response = await api.get("/").set("x-request-id", "invalid request id");
+
+            expect(response.headers["x-request-id"]).toMatch(UUID_REGEX);
+        });
+
+        it("When the client-provided x-request-id is too long, then generates a UUID", async () => {
+            const response = await api.get("/").set("x-request-id", "a".repeat(129));
+
+            expect(response.headers["x-request-id"]).toMatch(UUID_REGEX);
+        });
     });
 });

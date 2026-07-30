@@ -19,10 +19,16 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/RootStatus"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
     /v1/health:
         parameters:
@@ -36,6 +42,10 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
@@ -45,10 +55,16 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/HealthResponse"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
     /v1/auth/signup:
         parameters:
@@ -68,6 +84,10 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
@@ -78,6 +98,8 @@ paths:
                                 data: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                 "400":
                     $ref: "#/components/responses/BadRequest"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
     /v1/auth/login:
         parameters:
@@ -97,6 +119,10 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
@@ -109,6 +135,8 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
     /v1/products:
         parameters:
@@ -144,12 +172,18 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/ProductListResponse"
                 "400":
                     $ref: "#/components/responses/BadRequest"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
         post:
             summary: Create a product
             operationId: createProduct
@@ -167,6 +201,10 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
@@ -180,6 +218,8 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "401":
                     $ref: "#/components/responses/Unauthorized"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
     /v1/products/{id}:
         parameters:
@@ -194,6 +234,10 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
@@ -207,6 +251,8 @@ paths:
                     $ref: "#/components/responses/BadRequest"
                 "404":
                     $ref: "#/components/responses/NotFound"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
         put:
             summary: Update a product
             operationId: updateProduct
@@ -224,6 +270,10 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
@@ -239,6 +289,8 @@ paths:
                     $ref: "#/components/responses/Unauthorized"
                 "404":
                     $ref: "#/components/responses/NotFound"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
         delete:
             summary: Delete a product
             operationId: deleteProduct
@@ -251,6 +303,10 @@ paths:
                     headers:
                         x-request-id:
                             $ref: "#/components/headers/XRequestId"
+                        RateLimit:
+                            $ref: "#/components/headers/RateLimit"
+                        RateLimit-Policy:
+                            $ref: "#/components/headers/RateLimitPolicy"
                     content:
                         application/json:
                             schema:
@@ -266,6 +322,8 @@ paths:
                     $ref: "#/components/responses/Unauthorized"
                 "404":
                     $ref: "#/components/responses/NotFound"
+                "429":
+                    $ref: "#/components/responses/TooManyRequests"
 
 components:
     securitySchemes:
@@ -279,7 +337,11 @@ components:
             name: x-request-id
             in: header
             required: false
-            description: Optional client-provided request correlation ID. A UUID is generated when omitted.
+            description: Optional request correlation ID. It must use 1–128 letters, numbers, dots, underscores, colons, or hyphens; otherwise the API generates a UUID.
+            schema:
+                type: string
+                pattern: "^[A-Za-z0-9._:-]{1,128}$"
+                maxLength: 128
         ProductId:
             name: id
             in: path
@@ -294,6 +356,18 @@ components:
             description: Request correlation ID used in logs.
             schema:
                 type: string
+                pattern: "^[A-Za-z0-9._:-]{1,128}$"
+                maxLength: 128
+        RateLimit:
+            description: Current quota, remaining requests, and seconds until reset. The limit differs between the global and authentication limiters.
+            schema:
+                type: string
+                example: "limit=60, remaining=59, reset=60"
+        RateLimitPolicy:
+            description: Quota policy in the form `limit;w=window-in-seconds`.
+            schema:
+                type: string
+                example: "60;w=60"
 
     responses:
         BadRequest:
@@ -301,6 +375,10 @@ components:
             headers:
                 x-request-id:
                     $ref: "#/components/headers/XRequestId"
+                RateLimit:
+                    $ref: "#/components/headers/RateLimit"
+                RateLimit-Policy:
+                    $ref: "#/components/headers/RateLimitPolicy"
             content:
                 application/json:
                     schema:
@@ -310,6 +388,10 @@ components:
             headers:
                 x-request-id:
                     $ref: "#/components/headers/XRequestId"
+                RateLimit:
+                    $ref: "#/components/headers/RateLimit"
+                RateLimit-Policy:
+                    $ref: "#/components/headers/RateLimitPolicy"
             content:
                 application/json:
                     schema:
@@ -319,6 +401,23 @@ components:
             headers:
                 x-request-id:
                     $ref: "#/components/headers/XRequestId"
+                RateLimit:
+                    $ref: "#/components/headers/RateLimit"
+                RateLimit-Policy:
+                    $ref: "#/components/headers/RateLimitPolicy"
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/ErrorResponse"
+        TooManyRequests:
+            description: Request quota exceeded
+            headers:
+                x-request-id:
+                    $ref: "#/components/headers/XRequestId"
+                RateLimit:
+                    $ref: "#/components/headers/RateLimit"
+                RateLimit-Policy:
+                    $ref: "#/components/headers/RateLimitPolicy"
             content:
                 application/json:
                     schema:
@@ -395,8 +494,9 @@ components:
 
         Product:
             type: object
+            required: [id, name, price, stock, status, isFeatured, createdAt, updatedAt]
             example:
-                _id: 507f1f77bcf86cd799439011
+                id: 507f1f77bcf86cd799439011
                 name: Starter Tee
                 description: Basic product example
                 price: 29.99
@@ -406,7 +506,7 @@ components:
                 createdAt: "2026-07-11T12:00:00.000Z"
                 updatedAt: "2026-07-11T12:00:00.000Z"
             properties:
-                _id:
+                id:
                     type: string
                     description: MongoDB ObjectId
                 name:

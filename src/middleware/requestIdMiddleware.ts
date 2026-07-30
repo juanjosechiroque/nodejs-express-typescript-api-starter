@@ -2,15 +2,12 @@ import type { NextFunction, Request, Response } from "express";
 import { randomUUID } from "crypto";
 
 const REQUEST_ID_HEADER = "x-request-id";
+const SAFE_REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
 
 function resolveRequestId(header: string | string[] | undefined): string {
-    if (typeof header === "string" && header.trim()) {
-        return header.trim();
-    }
+    const candidate = Array.isArray(header) ? header[0]?.trim() : header?.trim();
 
-    if (Array.isArray(header) && header[0]?.trim()) {
-        return header[0].trim();
-    }
+    if (candidate && SAFE_REQUEST_ID_PATTERN.test(candidate)) return candidate;
 
     return randomUUID();
 }

@@ -13,7 +13,8 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for design decisions and trade-offs.
 - **TypeScript + Express 5** — ESM setup with strict type checks.
 - **Validation** — Zod schemas for config, params, query strings, and request bodies.
 - **Auth** — JWT signup/login flow with protected product writes.
-- **MongoDB** — Mongoose models, cursor pagination, filters, and seed data.
+- **MongoDB** — Mongoose models, lean reads, cursor pagination, filters, and seed data.
+- **Response contracts** — Explicit feature mappers expose public DTOs without persistence-only fields.
 - **Structure** — Feature-based modules with controller, service, repository, validation, and tests.
 - **Security basics** — Helmet, CORS, rate limiting, and auth-specific limits.
 - **Logging** — Pino logs with `x-request-id` correlation.

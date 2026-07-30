@@ -39,9 +39,8 @@ export async function updateProductById(id: string, update: UpdateProductInput) 
 }
 
 export async function deleteProductIfNotActive(productId: string) {
-    const deleted = await Product.findOneAndDelete({
+    return await Product.findOneAndDelete({
         _id: productId,
         status: { $ne: "active" },
-    });
-    return deleted;
+    }).lean();
 }

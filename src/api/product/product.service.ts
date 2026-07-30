@@ -1,5 +1,6 @@
 import { BadRequestError, NotFoundError } from "../../errors.js";
 import * as productRepository from "./product.repository.js";
+import { toProductDto } from "./product.mapper.js";
 import type { CreateProductInput, ListProductsInput, UpdateProductInput } from "./product.types.js";
 
 export async function getProducts({
@@ -15,7 +16,7 @@ export async function getProducts({
         isFeatured,
     });
     return {
-        items,
+        items: items.map(toProductDto),
         pagination: { limit, nextCursor, hasMore },
     };
 }
@@ -23,18 +24,19 @@ export async function getProducts({
 export async function getProductById(id: string) {
     const result = await productRepository.findProductById(id);
     if (!result) throw NotFoundError("Product not found");
-    return result;
+    return toProductDto(result);
 }
 
 export async function createProduct(input: CreateProductInput) {
-    return await productRepository.createProduct(input);
+    const result = await productRepository.createProduct(input);
+    return toProductDto(result);
 }
 
 export async function updateProduct({ id, ...fields }: UpdateProductInput & { id: string }) {
     const update = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined));
     const result = await productRepository.updateProductById(id, update);
     if (!result) throw NotFoundError("Product not found");
-    return result;
+    return toProductDto(result);
 }
 
 export async function deleteProduct(productId: string) {
@@ -44,5 +46,5 @@ export async function deleteProduct(productId: string) {
         if (!exists) throw NotFoundError("Product not found");
         throw BadRequestError("Active products must be archived before deletion");
     }
-    return result;
+    return toProductDto(result);
 }

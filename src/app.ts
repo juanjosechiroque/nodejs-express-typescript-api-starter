@@ -57,8 +57,15 @@ if (NODE_ENV !== "test" && RATE_LIMIT_WINDOW_MINUTES && RATE_LIMIT_MAX) {
         rateLimit({
             windowMs: RATE_LIMIT_WINDOW_MINUTES * 60 * 1000,
             limit: RATE_LIMIT_MAX,
-            standardHeaders: true,
+            standardHeaders: "draft-7",
             legacyHeaders: false,
+            handler: (_req, res) => {
+                res.status(429).json({
+                    status: 429,
+                    code: "TooManyRequests",
+                    message: "Too many requests, please try again later",
+                });
+            },
         })
     );
 }

@@ -49,7 +49,8 @@ Each domain feature is self-contained in `src/api/{feature}/`:
 {feature}.service.ts      # Business logic and orchestration
 {feature}.validation.ts   # Zod schemas for body, params, and query
 {feature}.repository.ts   # Persistence operations (Mongoose hidden from services)
-{feature}.model.ts        # Mongoose schema, indexes, serialization
+{feature}.model.ts        # Mongoose schema, indexes, and persistence options
+{feature}.mapper.ts       # Maps lean persistence records to public API DTOs
 {feature}.types.ts        # Feature input/output types when useful
 {feature}.test.ts         # Unit or HTTP behavior tests (Vitest + Supertest)
 ```
@@ -73,6 +74,7 @@ Product write routes require authentication, but they do not enforce ownership o
 | JWT + active-user lookup         | Disabled users lose access without waiting for token expiry.             | The lookup becomes an observed authentication bottleneck.    |
 | Authentication without ownership | Demonstrates protected routes without inventing an authorization domain. | The product defines ownership or role requirements.          |
 | Cursor pagination                | Stable indexed traversal without offset scans.                           | Consumers need arbitrary page jumps or total counts.         |
+| Lean reads + explicit DTOs       | Keeps reads lightweight and prevents persistence fields leaking to HTTP. | A feature needs Mongoose document methods or virtuals.       |
 | In-memory rate limiting          | Adds baseline abuse protection without another operational dependency.   | The API runs on multiple replicas or needs shared quotas.    |
 | Mocked Mongoose tests            | Keeps most HTTP tests fast and deterministic.                            | Persistence behavior needs broader real-database coverage.   |
 
@@ -82,13 +84,14 @@ Product write routes require authentication, but they do not enforce ownership o
 router → controller → service → repository → model
 ```
 
-| Layer        | Responsibility                                                       | Must not                       |
-| ------------ | -------------------------------------------------------------------- | ------------------------------ |
-| `router`     | Declare routes, attach middleware, wrap handlers with `asyncHandler` | Contain logic                  |
-| `controller` | Read `req`, call service, send response via `sendResponse()`         | Touch the database             |
-| `service`    | Business rules, orchestration, error throwing                        | Import `req`, `res`, or `next` |
-| `repository` | Persistence operations and query strategy                            | Contain business logic         |
-| `model`      | Schema definition, indexes, `toJSON` transforms                      | Contain query logic            |
+| Layer        | Responsibility                                                       | Must not                                   |
+| ------------ | -------------------------------------------------------------------- | ------------------------------------------ |
+| `router`     | Declare routes, attach middleware, wrap handlers with `asyncHandler` | Contain logic                              |
+| `controller` | Read `req`, call service, send response via `sendResponse()`         | Touch the database                         |
+| `service`    | Business rules, orchestration, error throwing                        | Import `req`, `res`, or `next`             |
+| `repository` | Persistence operations and query strategy                            | Contain business logic                     |
+| `model`      | Schema definition, indexes, and persistence options                  | Contain query logic or HTTP serialization  |
+| `mapper`     | Map persistence records to the public response DTO                   | Hide fields through implicit serialization |
 
 Controllers never access the database directly. Services never reference Express objects or Mongoose APIs directly.
 
