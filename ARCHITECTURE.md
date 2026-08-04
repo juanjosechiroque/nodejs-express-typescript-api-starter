@@ -58,8 +58,8 @@ checks belong in the service layer when an application domain requires them.
 ## Persistence and Query Strategy
 
 Product list queries use cursor pagination over `_id`, not `skip`. The repository fetches one
-extra record to determine whether a next page exists, then returns an opaque next cursor. This
-keeps traversal stable when records are inserted and avoids scanning earlier pages.
+extra record to determine whether a next page exists, then returns the next cursor. This keeps
+traversal stable when records are inserted and avoids scanning earlier pages.
 
 The product collection has a compound index on `{ status: 1, isFeatured: 1, _id: 1 }`. It
 supports the common list query: filter by `status` and/or `isFeatured`, then continue from the

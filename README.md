@@ -156,43 +156,16 @@ Errors add a stable `code` and, for validation failures, a `details` array. See
 
 ## API Examples
 
-Main flow with `curl` (assumes the API on `http://localhost:3000`):
-
-The login example uses `jq` to extract the JWT.
+Quick check:
 
 ```bash
-# Sign up
-curl -s -X POST http://localhost:3000/v1/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"new-user@example.com","password":"DemoPassword123!"}'
-
-# Log in and save the JWT
-TOKEN=$(curl -s -X POST http://localhost:3000/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"new-user@example.com","password":"DemoPassword123!"}' \
-  | jq -r '.data')
-
-# Create a product
-curl -s -X POST http://localhost:3000/v1/products \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"name":"Starter Tee","price":29.99,"stock":50,"status":"draft"}'
-
-# List active featured products
-curl -s "http://localhost:3000/v1/products?status=active&isFeatured=true"
-
-# Update a product (archive before delete if it was active)
-curl -s -X PATCH http://localhost:3000/v1/products/PRODUCT_ID \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"status":"archived"}'
-
-# Delete a product
-curl -s -X DELETE http://localhost:3000/v1/products/PRODUCT_ID \
-  -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3000/v1/health
+curl "http://localhost:3000/v1/products?status=active&isFeatured=true"
 ```
 
-Replace `PRODUCT_ID` with a MongoDB ObjectId from a create or list response.
+Representative requests for authentication, Product CRUD, filters, cursor pagination, and
+error cases are available in [docs/examples.md](./docs/examples.md). The complete contract is
+defined in [openapi.yaml](./openapi.yaml).
 
 ## Docker
 
