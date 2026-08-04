@@ -2,9 +2,9 @@
 
 An Express 5 + TypeScript starter for REST APIs with MongoDB, JWT auth, Zod validation, structured logging, Docker, and tests.
 
-It includes a small auth flow and a product module that show how routes, validation, auth, persistence, pagination, seed data, and tests fit together.
-
-The example domain is intentionally small. Auth exists to protect routes, while products provide a complete reference CRUD module without introducing application-specific roles, ownership, orders, or payments.
+The intentionally small example includes an auth flow and a Product reference CRUD module. It
+shows how routes, validation, auth, persistence, pagination, seed data, and tests fit together
+without introducing application-specific roles, ownership, orders, or payments.
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for design decisions and trade-offs.
 
@@ -88,19 +88,29 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for design decisions and trade-offs.
 
 ## Environment variables
 
-Copy `.env.example` to `.env`. In non-production, variables are loaded with `dotenv` and validated at startup with Zod (see `src/config.ts`).
+Copy `.env.example` to `.env`. In non-production, variables are loaded with `dotenv` and
+validated at startup with Zod (see `src/config.ts`).
 
-| Variable                    | Required | Description                                                                                                            |
-| --------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `PORT`                      | No       | HTTP port (default `3000`).                                                                                            |
-| `NODE_ENV`                  | No       | Runtime environment (default `development`).                                                                           |
-| `MONGODB_URI`               | **Yes**  | MongoDB connection string.                                                                                             |
-| `JWT_SECRET`                | **Yes**  | JWT signing secret; minimum 32 characters.                                                                             |
-| `JWT_EXPIRATION_TIME`       | No       | Token lifetime (default `1h`).                                                                                         |
-| `CORS_ALLOWED_ORIGINS`      | No       | Comma-separated allowed origins. CORS is only enabled when this is set. Use `*` to allow all origins.                  |
-| `RATE_LIMIT_WINDOW_MINUTES` | No       | Length of the sliding window in **minutes**. Must be configured together with `RATE_LIMIT_MAX`.                        |
-| `RATE_LIMIT_MAX`            | No       | Max **HTTP requests per IP** allowed inside that window. Must be configured together with `RATE_LIMIT_WINDOW_MINUTES`. |
-| `LOG_LEVEL`                 | No       | Pino log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` (default `info`).                                   |
+### Minimum development configuration
+
+Only these values are required to start the API:
+
+| Variable      | Description                                      |
+| ------------- | ------------------------------------------------ |
+| `MONGODB_URI` | MongoDB connection string.                       |
+| `JWT_SECRET`  | JWT signing secret, with at least 32 characters. |
+
+### Optional configuration
+
+| Variable                    | Description                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `PORT`                      | HTTP port (default `3000`).                                                                           |
+| `NODE_ENV`                  | Runtime environment (default `development`).                                                          |
+| `JWT_EXPIRATION_TIME`       | Token lifetime (default `1h`).                                                                        |
+| `CORS_ALLOWED_ORIGINS`      | Comma-separated allowed origins. CORS is only enabled when this is set. Use `*` to allow all origins. |
+| `RATE_LIMIT_WINDOW_MINUTES` | Length of the sliding window in minutes. Configure it together with `RATE_LIMIT_MAX`.                 |
+| `RATE_LIMIT_MAX`            | Max HTTP requests per IP in that window. Configure it together with `RATE_LIMIT_WINDOW_MINUTES`.      |
+| `LOG_LEVEL`                 | Pino level: `trace`, `debug`, `info`, `warn`, `error`, or `fatal` (default `info`).                   |
 
 ## Request tracing
 
@@ -128,6 +138,21 @@ API details are available in [openapi.yaml](./openapi.yaml).
 | `DELETE` | `/v1/products/:id` | Yes           | Delete a product if it is not active.             |
 
 Protected product routes expect `Authorization: Bearer <jwt>`. List and get-by-id stay public.
+
+## Response shape
+
+Successful responses use a common envelope:
+
+```json
+{
+    "status": 200,
+    "message": "success",
+    "data": {}
+}
+```
+
+Errors add a stable `code` and, for validation failures, a `details` array. See
+[openapi.yaml](./openapi.yaml) for the complete request and response contract.
 
 ## API Examples
 
@@ -195,29 +220,6 @@ docker compose down -v
 ```
 
 Use `docker compose down -v` only when you want to remove the local MongoDB volume and start with an empty database.
-
-## Response shape
-
-**Success**
-
-```json
-{
-    "status": 200,
-    "message": "success",
-    "data": {}
-}
-```
-
-**Error**
-
-```json
-{
-    "status": 400,
-    "code": "BadRequestError",
-    "message": "Validation failed",
-    "details": [{ "field": "price", "error": "Too small: expected number to be >0" }]
-}
-```
 
 ## Development
 
