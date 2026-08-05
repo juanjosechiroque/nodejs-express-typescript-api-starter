@@ -19,6 +19,70 @@ dependency.
 Cross-cutting HTTP behavior stays in middleware. Business rules stay in services, and
 database-specific behavior stays in repositories and models.
 
+### C4 Diagrams
+
+The diagrams use the first three C4 levels. They show runtime boundaries and responsibilities;
+the feature pattern in [Project Structure](#project-structure) is the code-level reference.
+
+#### Level 1 — System Context
+
+```mermaid
+flowchart LR
+    client["API consumer<br/>(browser, mobile app, or server)"]
+    api["Node.js Express TypeScript API Starter<br/>REST API for auth and products"]
+    database[("MongoDB<br/>User and Product data")]
+
+    client -->|HTTPS / JSON| api
+    api -->|Mongoose queries| database
+```
+
+#### Level 2 — Containers
+
+```mermaid
+flowchart LR
+    client["API consumer"]
+
+    subgraph runtime["Deployment runtime"]
+        api["API container<br/>Node.js, Express, TypeScript"]
+        database[("Database container<br/>MongoDB")]
+    end
+
+    client -->|HTTPS / JSON| api
+    api -->|Mongoose / MongoDB protocol| database
+```
+
+The API is one deployable application and MongoDB is its persistent dependency. Docker Compose
+is a local runtime option; the container boundaries remain the same when the database is managed
+externally.
+
+#### Level 3 — Components
+
+```mermaid
+flowchart LR
+    client["API consumer"]
+    database[("MongoDB")]
+
+    subgraph api["API container — Node.js / Express"]
+        middleware["App middleware<br/>security, request ID, logging,<br/>CORS, rate limiting, errors"]
+        router["Versioned routers<br/>auth, health, product"]
+        controller["Controllers<br/>HTTP input and response"]
+        service["Services<br/>business rules and orchestration"]
+        mapper["Mappers<br/>public DTOs"]
+        repository["Repositories<br/>query strategy"]
+        model["Mongoose models<br/>schemas and indexes"]
+    end
+
+    client -->|HTTPS / JSON| middleware
+    middleware --> router
+    router --> controller
+    controller -->|calls| service
+    service -->|reads or writes| repository
+    repository --> model
+    model --> database
+    service -->|maps records| mapper
+    mapper -->|public DTO| controller
+```
+
 | Layer        | Responsibility                                                       | Must not                                   |
 | ------------ | -------------------------------------------------------------------- | ------------------------------------------ |
 | `router`     | Declare routes, attach middleware, wrap handlers with `asyncHandler` | Contain business logic                     |
