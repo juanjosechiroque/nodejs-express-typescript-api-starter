@@ -108,9 +108,28 @@ Only these values are required to start the API:
 | `NODE_ENV`                  | Runtime environment (default `development`).                                                          |
 | `JWT_EXPIRATION_TIME`       | Token lifetime (default `1h`).                                                                        |
 | `CORS_ALLOWED_ORIGINS`      | Comma-separated allowed origins. CORS is only enabled when this is set. Use `*` to allow all origins. |
+| `TRUST_PROXY_HOPS`          | Exact number of trusted proxy hops in front of Express (default `0`).                                 |
 | `RATE_LIMIT_WINDOW_MINUTES` | Length of the sliding window in minutes. Configure it together with `RATE_LIMIT_MAX`.                 |
 | `RATE_LIMIT_MAX`            | Max HTTP requests per IP in that window. Configure it together with `RATE_LIMIT_WINDOW_MINUTES`.      |
 | `LOG_LEVEL`                 | Pino level: `trace`, `debug`, `info`, `warn`, `error`, or `fatal` (default `info`).                   |
+
+### Reverse proxy configuration
+
+Express derives `req.ip` and `req.protocol` from the socket by default. `TRUST_PROXY_HOPS`
+allows it to use `X-Forwarded-For` and `X-Forwarded-Proto` only when the application runs behind
+a known proxy topology. This matters because authentication logs and the rate limiter use the
+derived client IP.
+
+| Deployment path                    | Value |
+| ---------------------------------- | ----- |
+| Client → API                       | `0`   |
+| Client → load balancer → API       | `1`   |
+| Client → CDN → load balancer → API | `2`   |
+
+Use the exact number of controlled hops that every request path traverses. Do not increase the
+value merely to accommodate a possible longer path: if a shorter path can reach the API, a client
+may be able to supply a trusted forwarded address. The default local and Docker Compose setup
+exposes the API directly, so it keeps `TRUST_PROXY_HOPS=0`.
 
 ## Request tracing
 

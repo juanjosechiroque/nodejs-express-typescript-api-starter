@@ -170,8 +170,9 @@ schemas, response shapes, rate-limit responses, and headers are documented in `o
 - The Docker image uses a multi-stage build and runs as a non-root user. On `SIGTERM` or
   `SIGINT`, the server stops accepting requests, closes MongoDB connections, and exits after
   active work finishes or the shutdown timeout elapses.
-- The application trusts one reverse proxy (`trust proxy = 1`). A deployment must use that exact
-  topology or make this setting environment-specific before relying on client IPs or rate limits.
+- Reverse-proxy trust is disabled by default (`TRUST_PROXY_HOPS=0`). Deployments set the exact
+  number of controlled proxy hops before relying on forwarded client IPs or protocols. Auth logs
+  and rate limiting then use the client IP derived by Express from that configured topology.
 
 ## Testing
 
@@ -202,7 +203,7 @@ Product and infrastructure owners still need to define:
 - ownership, roles, or permissions for protected resources;
 - refresh-token rotation or another session strategy;
 - secret management and key rotation, with no default production JWT secret;
-- the trusted-proxy topology and allowed browser origins;
+- the exact trusted-proxy hop count and allowed browser origins;
 - shared rate limiting for multi-replica deployments;
 - MongoDB backups, replica-set strategy, operation timeouts, and resource limits;
 - metrics, distributed tracing, dashboards, and alerting; and

@@ -13,6 +13,7 @@ services:
             MONGODB_URI: ${COMPOSE_MONGODB_URI:-mongodb://mongo:27017/api_starter}
             JWT_SECRET: ${JWT_SECRET:-compose_demo_jwt_secret_at_least_32_chars}
             JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-1h}
+            TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-0}
             RATE_LIMIT_WINDOW_MINUTES: ${RATE_LIMIT_WINDOW_MINUTES:-1}
             RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-60}
             LOG_LEVEL: ${LOG_LEVEL:-info}
