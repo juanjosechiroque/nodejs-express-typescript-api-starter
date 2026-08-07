@@ -18,7 +18,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for design decisions and trade-offs.
 - **Structure** — Feature-based modules with controller, service, repository, validation, and tests.
 - **Security basics** — Helmet, CORS, rate limiting, and auth-specific limits.
 - **Logging** — Pino logs with `x-request-id` correlation.
-- **Workflow** — Vitest, coverage, ESLint, Prettier, Husky, Docker Compose, and GitHub Actions.
+- **Workflow** — Vitest, Testcontainers, coverage, ESLint, Prettier, Husky, Docker Compose, and GitHub Actions.
 
 ## Requirements
 
@@ -74,17 +74,19 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for design decisions and trade-offs.
 
 ## Available Scripts
 
-| Script                  | Description                                    |
-| ----------------------- | ---------------------------------------------- |
-| `npm start`             | Run the compiled production build              |
-| `npm run dev`           | Start the API in development mode              |
-| `npm run build`         | Compile TypeScript to `dist/`                  |
-| `npm run validate`      | Check linting and formatting                   |
-| `npm run format`        | Apply formatting and lint fixes                |
-| `npm run seed`          | Reset the demo user and upsert demo products   |
-| `npm test`              | Run the test suite once                        |
-| `npm run test:coverage` | Run the test suite with coverage               |
-| `npm run typecheck`     | Check TypeScript types without emitting output |
+| Script                     | Description                                    |
+| -------------------------- | ---------------------------------------------- |
+| `npm start`                | Run the compiled production build              |
+| `npm run dev`              | Start the API in development mode              |
+| `npm run build`            | Compile TypeScript to `dist/`                  |
+| `npm run validate`         | Check linting and formatting                   |
+| `npm run format`           | Apply formatting and lint fixes                |
+| `npm run seed`             | Reset the demo user and upsert demo products   |
+| `npm test`                 | Run the test suite once                        |
+| `npm run test:all`         | Run unit/HTTP and MongoDB integration suites   |
+| `npm run test:coverage`    | Run the test suite with coverage               |
+| `npm run test:integration` | Run real MongoDB tests (Docker required)       |
+| `npm run typecheck`        | Check TypeScript types without emitting output |
 
 ## Environment variables
 
@@ -225,7 +227,20 @@ Layer responsibilities and coding conventions are in [ARCHITECTURE.md](./ARCHITE
 
 ## Testing
 
-The test setup uses **Vitest** with explicit imports, **Supertest** for HTTP behavior, and mocked Mongoose models so CI does not require a live database.
+The default `npm test` suite uses **Vitest**, **Supertest**, and mocked Mongoose models for fast,
+deterministic HTTP behavior checks. `npm run test:integration` starts a disposable MongoDB 8
+replica set with **Testcontainers**, synchronizes the real Mongoose indexes, and verifies unique
+email enforcement, password hooks, compound indexes, cursor pagination, filters, updates, and
+conditional deletion against the database engine. Docker must be running for that suite.
+
+Run both layers before a database-related change:
+
+```bash
+npm run test:all
+```
+
+CI runs the coverage and integration commands separately, and Testcontainers removes the database
+container after the integration suite completes.
 
 Husky runs `npm run validate` automatically on each commit to keep lint and formatting clean.
 

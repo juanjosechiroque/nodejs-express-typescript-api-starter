@@ -44,6 +44,9 @@ jobs:
             - name: Run tests with coverage
               run: npm run test:coverage
 
+            - name: Run MongoDB integration tests
+              run: npm run test:integration
+
             - name: Resolve image tag
               id: commit
               run: echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"

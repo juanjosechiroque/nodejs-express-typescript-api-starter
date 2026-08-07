@@ -107,17 +107,17 @@ checks belong in the service layer when an application domain requires them.
 
 ## Decisions and Trade-Offs
 
-| Decision                         | Reason                                                      | Accepted cost                                         |
-| -------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
-| Express 5 + TypeScript           | Familiar middleware lifecycle with strict application types | A more specialized framework may be faster            |
-| MongoDB + Mongoose               | Simple local setup and productive document modeling         | Relations and transactions need deliberate design     |
-| Repository layer                 | Keeps Mongoose and query strategy out of services           | Small features may not justify the extra boundary     |
-| JWT + active-user lookup         | Disabled users lose access without token-expiry delay       | Each protected request reads the user                 |
-| Authentication without ownership | Shows route protection without inventing a business domain  | Real applications need roles or ownership             |
-| Cursor pagination                | Stable indexed traversal without offset scans               | No arbitrary page jumps or total count                |
-| Lean reads + explicit DTOs       | Lightweight reads and no persistence fields in HTTP output  | No document methods or virtuals in those reads        |
-| In-memory rate limit             | Enough for a single-instance starter                        | Replicas need shared enforcement                      |
-| Mocked Mongoose tests            | Fast, deterministic HTTP tests without a database in CI     | Real query and index behavior needs integration tests |
+| Decision                         | Reason                                                               | Accepted cost                                     |
+| -------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------- |
+| Express 5 + TypeScript           | Familiar middleware lifecycle with strict application types          | A more specialized framework may be faster        |
+| MongoDB + Mongoose               | Simple local setup and productive document modeling                  | Relations and transactions need deliberate design |
+| Repository layer                 | Keeps Mongoose and query strategy out of services                    | Small features may not justify the extra boundary |
+| JWT + active-user lookup         | Disabled users lose access without token-expiry delay                | Each protected request reads the user             |
+| Authentication without ownership | Shows route protection without inventing a business domain           | Real applications need roles or ownership         |
+| Cursor pagination                | Stable indexed traversal without offset scans                        | No arbitrary page jumps or total count            |
+| Lean reads + explicit DTOs       | Lightweight reads and no persistence fields in HTTP output           | No document methods or virtuals in those reads    |
+| In-memory rate limit             | Enough for a single-instance starter                                 | Replicas need shared enforcement                  |
+| Layered database testing         | Mocks keep HTTP tests fast; Testcontainers verifies MongoDB behavior | Integration tests require Docker and take longer  |
 
 ## Persistence and Query Strategy
 
@@ -176,13 +176,15 @@ schemas, response shapes, rate-limit responses, and headers are documented in `o
 
 ## Testing
 
-Vitest and Supertest exercise HTTP behavior through the real Express app. Mongoose is mocked at
-the model level, keeping CI deterministic without a MongoDB service. Feature tests cover happy
-paths, validation and authentication failures, not-found cases, database errors, and public
-Product serialization.
+Vitest and Supertest exercise HTTP behavior through the real Express app. The default suite mocks
+Mongoose at the model level for fast, deterministic feature tests covering happy paths,
+validation and authentication failures, not-found cases, database errors, and public Product
+serialization.
 
-This is deliberately not a replacement for integration testing. Add real MongoDB tests when
-changing indexes, query behavior, migrations, or database-specific options.
+A separate Vitest configuration starts one disposable MongoDB 8 replica set with Testcontainers.
+It synchronizes the production Mongoose indexes and exercises unique constraints, model hooks,
+compound filters, ObjectId cursor pagination, updates, and conditional deletes through the real
+repositories. CI runs both layers; local integration runs require Docker.
 
 ## Known Limitations
 
